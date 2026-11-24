@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Datasets (never commit images or dataset label CSVs)
+CheXpert/
+VinBigData/
+data/features/
+data/splits/
+data/external/
+data/*.csv
+
+# Large binary artefacts
+*.pt
+*.pth
+*.npy
+*.npz
+results/runs/
+results/v2/logits_v1_ext/
+results/v2/logits_v2/
+results/v2/state/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# LaTeX build products
+*.aux
+*.log
+*.blg
+*.out
+*.synctex.gz
+paper/**/*.pdf
+relatedworkpapers/
+*.zip
+results/v2/logs/
+paper/midl2027/template_src/

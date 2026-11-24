@@ -1,0 +1,46 @@
+seed: 42
+image_size: 224
+backbone: densenet121
+n_qubits: 6
+n_layers: 2
+mlp_hidden: 8
+mlp_dropout: 0.1
+batch_size: 64
+feature_batch_size: 32
+pqc_batch_size: 16
+epochs: 40
+patience: 8
+lr: 1.0e-3
+weight_decay: 1.0e-4
+n_bins: 15
+n_seeds: 3
+seeds: [42, 43, 44]
+
+# Primary paper task first. pneumonia_proxy is a sensitivity analysis
+# because VinDr has no Pneumonia class (Consolidation ∪ Infiltration).
+tasks:
+  - no_finding
+  - cardiomegaly
+  - pleural_effusion
+  - consolidation
+  - pneumonia_proxy
+
+heads:
+  - mlp
+  - product_pqc
+  - entangling_pqc
+
+chexpert:
+  u_protocol: u_ignore
+  frontal_only: true
+  n_train: 2000
+  n_val: 500
+  n_test: 500
+  balanced_train: true
+  natural_eval: true
+
+vindr:
+  n_test: 1000
+  vote: any
+  balanced_eval: true
+  natural_eval: true

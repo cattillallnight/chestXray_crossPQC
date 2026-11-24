@@ -1,0 +1,374 @@
+\documentclass{midl} % MIDL 2027 is single-blind: author names visible
+
+% booktabs and tikz only. Do not load times, subcaption, cleveref,
+% geometry, setspace, acro, or glossaries: they conflict with midl.cls
+% or change the official page geometry.
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\jmlrvolume{-- Under Review}
+\jmlryear{2027}
+\jmlrworkshop{Full Paper -- MIDL 2027 submission}
+\editors{Under Review for MIDL 2027}
+
+\title[Quantum heads, matched readout, CXR shift]{What a Six-Qubit Head Can and Cannot Change: Calibration under Cross-Population Chest X-Ray Shift at Matched Capacity}
+
+\midlauthor{\Name{Tran Thi Thuy Quyen} \Email{quyentttiace200993@gmail.com}\\
+\addr Information Assurance, FPT University Can Tho, Vietnam}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A hybrid quantum-classical head is often scored as if it were a full image classifier. That comparison confounds the circuit with the backbone, and it is the usual way to claim that a parameterized quantum circuit (PQC) ``detects'' disease on chest radiographs. We ask a smaller, answerable question. Freeze an ImageNet DenseNet-121, compress its features to six angles, and train three single-logit heads of nearly equal nominal size---a multilayer perceptron (MLP), a product PQC, and a ring-CNOT PQC. Models trained on CheXpert are tested on VinDr-CXR; the primary question is calibration, not ranking. We also report a methodological finding that is easy to miss: with a single-qubit readout $\langle Z_0\rangle$ and \emph{no} entangling gates, the product circuit is functionally a one-feature model, because only $z_0$ reaches the measured wire. The product-versus-entangling contrast therefore changes two things at once (entanglement and input routing), and matched nominal parameter counts do not imply matched functional capacity. Under this protocol neither PQC head is a more trustworthy classifier than the matched MLP: entanglement does not reduce expected calibration error, discrimination is comparable or slightly worse, and a temperature fitted on CheXpert validation can lower source error while raising target error on the same run. On both balanced and natural-prevalence VinDr-CXR holdouts these conclusions hold. VinDr-CXR has no Pneumonia class; that ontology change is confined to the appendix.
+\end{abstract}
+
+\begin{keywords}
+confidence calibration, domain shift, chest radiography, parameterized quantum circuit, matched capacity, readout locality
+\end{keywords}
+
+\section{Introduction}
+
+A chest-radiograph classifier that looks well calibrated in one hospital can become over- or under-confident in another \cite{ovadia2019shift,zech2018variable}. Calibration under shift is therefore a property of the deployed model, not only of the training loss. In parallel, variational circuits have been attached to classical backbones and described as hybrid quantum-classical networks \cite{benedetti2019pqc,cerezo2021vqa}. Many of those studies compare a small PQC with a fully trained convolutional classifier, or they map CheXpert Pneumonia onto VinDr classes that do not include Pneumonia. Both moves credit the circuit for work it did not do.
+
+The comparison that isolates the circuit is narrower. Keep the representation fixed. Match the trainable parameter count. Change only the head. That is the protocol implemented here, and it is not a new architecture. A DenseNet-121 \cite{huang2017densenet} pretrained on ImageNet \cite{deng2009imagenet} is frozen and used only as a 1024-dimensional feature extractor. A linear map compresses those features to six $\tanh$-scaled angles. Three heads then produce a binary logit: a two-layer MLP, a product PQC with no entangling gates, and an otherwise identical PQC with a CNOT ring. The circuit is a standard PennyLane construction \cite{bergholm2018pennylane}. Figure~\ref{fig:pipeline} is the entire model.
+
+Three questions follow from that figure. First, on the same six-dimensional bottleneck, do the PQC heads differ from the MLP in AUROC when CheXpert-trained models are evaluated on VinDr-CXR? That is secondary. Second---the primary question---does entanglement reduce expected calibration error (ECE), maximum calibration error (MCE), or Brier score under shift? Third, does a scalar temperature fitted on CheXpert validation logits \cite{guo2017calibration} calibrate PQC heads more effectively than the MLP on the Vietnamese target?
+
+The paper does not claim a new ansatz, quantum advantage, hardware execution, or state-of-the-art CXR detection. What the implementation can support is a matched-capacity protocol, a fully reported negative grid, and a shift result for post-hoc calibration. All heads consume the same $z\in\mathbb{R}^{6}$. All are trained identically (same splits, optimizer, seeds). A fully trained DenseNet classifier is an unmatched upper bound and is not used as a baseline. Forty-five of forty-five scheduled runs are included, among them seven temperature fits that hit the clamp $T\in\{0.001,100\}$. CheXpert uncertain labels are dropped (U-Ignore) \cite{irvin2019chexpert}. VinDr boxes use an any-vote \cite{nguyen2022vindrcxr}. Findings that share a name are reported in the main tables; pneumonia is not, because VinDr-CXR has no Pneumonia class.
+
+A note on the title. We changed it from a ``matched-capacity PQC heads'' framing to ``what a six-qubit head can and cannot change'' because the revision documents a readout-locality effect (Section~\ref{sec:locality}) that makes the naive product-versus-entangling contrast ambiguous. The headline result is unchanged and, we argue, more honest: at this capacity a PQC is not a better-calibrated head under shift.
+
+\section{Related work}
+
+\subsection{Confidence calibration}
+
+A probabilistic classifier is calibrated when, among instances predicted with confidence $p$, the empirical frequency of the predicted event is also $p$. Brier \cite{brier1950verification} introduced a proper scoring rule that jointly penalizes discrimination and calibration. Naeini et al.\ \cite{naeini2015ece} defined ECE by binning confidence and averaging the absolute gap between accuracy and confidence; Nixon et al.\ \cite{nixon2019measuring} later documented the sensitivity of that estimator to binning. Guo et al.\ \cite{guo2017calibration} showed that modern deep networks are systematically overconfident and that a single temperature $T$ fitted by negative log-likelihood on a validation set is a strong, almost parameter-free baseline. None of these methods assumes that the validation distribution matches the deployment distribution. Ovadia et al.\ \cite{ovadia2019shift} showed that predictive uncertainty, including temperature-scaled confidence, degrades under covariate and semantic shift. We use Guo-style scalar temperature as the third research question, fitted only on CheXpert validation logits.
+
+\subsection{Chest radiography, labels, and shift}
+
+ChestX-ray8 \cite{wang2017chestxray8}, CheXpert \cite{irvin2019chexpert}, MIMIC-CXR \cite{johnson2019mimiccxr}, and VinDr-CXR \cite{nguyen2022vindrcxr} differ in geography, devices, report style, and label generation. CheXNet \cite{rajpurkar2017chexnet} reported radiologist-level pneumonia detection on a single corpus; subsequent analyses showed that such numbers need not travel. Zech et al.\ \cite{zech2018variable} documented hospital-specific shortcuts. Oakden-Rayner et al.\ \cite{oakden2020hidden} described hidden stratification. Seyyed-Kalantari et al.\ \cite{seyyed2021underdiagnosis} showed underdiagnosis bias in underserved groups. Pooch et al.\ \cite{pooch2020shift} measured domain shift among CXR classifiers directly. CheXpert encodes uncertainty as $-1$; collapsing U-Ignore, or mapping CheXpert Pneumonia onto VinDr classes that do not include Pneumonia, is an ontology change rather than a population change. We keep U-Ignore, use an any-vote on VinDr boxes, report four overlapping findings in the main table, and isolate Consolidation $\cup$ Infiltration as an appendix proxy.
+
+\subsection{Parameterized quantum circuits}
+
+Parameterized quantum circuits are variational models whose gates carry trainable angles \cite{mitarai2018qcl,benedetti2019pqc,cerezo2021vqa}. Angle embedding followed by single-qubit rotations and optional entangling gates is the default encoding in PennyLane \cite{bergholm2018pennylane}. Schuld et al.\ \cite{schuld2021encoding} showed that the encoding controls the Fourier spectrum of the hypothesis class. Expressibility and entangling capability of common ansatze were quantified by Sim et al.\ \cite{sim2019expressibility}; those measures do not imply better calibration. Training is further constrained by barren plateaus \cite{mcclean2018barren}. Hybrid transfer learning has already replaced a DenseNet-121 classifier with a PQC for CheXpert cardiomegaly and reported AUROC comparable to a classical head \cite{decoodt2023hybrid}. That study optimizes discrimination on a single balanced corpus. It does not match head capacity on a shared bottleneck or treat calibration under geographic shift as the primary endpoint. A six-qubit expectation head on a frozen DenseNet vector is a small classical-to-quantum map. Comparing it with a fully trained DenseNet classifier confounds representation learning with the head.
+
+\subsection{Why a single-qubit readout matters}
+\label{sec:locality}
+
+An expectation value on one wire does not see the whole circuit. If a circuit contains no two-qubit gates, the reduced state of wire 0 depends only on the gates and parameters on wire 0, so any data encoded on other wires cannot influence $\langle Z_0\rangle$. Entangling gates are what carry information from the other wires into wire 0 (and the reverse). This is elementary, but it has a sharp consequence for ``matched-capacity'' claims: two circuits with equal parameter counts can have very different \emph{functional} input support when the readout is local. Section~\ref{sec:readout} makes this concrete for the specific heads in \texttt{models.py}.
+
+\section{Methods}
+
+\subsection{Source, target, and tasks}
+
+CheXpert-v1.0-small is the source \cite{irvin2019chexpert}. Only frontal radiographs are kept. Uncertain labels ($-1$) are dropped; blank findings are treated as negative. Splits are patient-level. Training uses 2\,000 class-balanced images; validation and test use 500 images at natural prevalence (\tableref{tab:splits}).
+
+VinDr-CXR training images (15\,000 PNG files) are the external target \cite{nguyen2022vindrcxr}. No VinDr image is used for training. An image is positive if any radiologist assigned that class. Two holdouts of 1\,000 images are built: class-balanced and natural-prevalence. Consolidation has only 353 positives in the public training boxes, so the ``balanced'' holdout is 353/647. The 3\,000-image Kaggle test split has no public labels and is unused. Splits were not resampled after the grid.
+
+Four primary tasks share a finding name: no finding, cardiomegaly, pleural effusion, and consolidation. A fifth task, \texttt{pneumonia\_proxy}, maps CheXpert Pneumonia to VinDr Consolidation $\cup$ Infiltration and is flagged \texttt{ontology\_shift=True}. It is not a pneumonia detector.
+
+\subsection{Matched-nominal heads and a readout-locality caveat}
+\label{sec:readout}
+
+The model is a frozen trunk plus a small head. Let $x \in \mathbb{R}^{1024}$ be the frozen DenseNet-121 feature. Images are converted to RGB, resized to $224\times 224$, and ImageNet-normalized; the backbone classifier is replaced by the identity. The bottleneck is
+\begin{equation}
+\label{eq:bottleneck}
+z = \pi \tanh(Wx + b) \in \mathbb{R}^{6}.
+\end{equation}
+The MLP head is $6 \to 8 \to \tanh \to \mathrm{Dropout}(0.1) \to 1$ (6\,215 trainable parameters, including $W,b$). Each PQC uses six wires, two layers of RX/RY/RZ, and $Y$-angle embedding of $z$. The product circuit has no CNOTs; the entangling circuit adds a ring $\mathrm{CNOT}(i,i+1)$ plus $\mathrm{CNOT}(5,0)$ after each rotation layer. The readout is $\mathrm{scale}\cdot\langle Z_0\rangle + \mathrm{bias}$ (6\,188 parameters). The bottleneck tensor is not detached: gradients flow into $W$ for every head. Circuits are simulated with PennyLane \texttt{default.qubit} and backpropagation on CPU float64. There is no hardware run. \figureref{fig:pipeline} is the shared trunk; \figureref{fig:circuits} is the circuit that \texttt{models.py} actually builds.
+
+The two PQCs are matched in nominal parameter count but \emph{not} in functional input support. In the product circuit there is no gate that couples wire $i$ to $j$, so the measured wire $q_0$ evolves only through the gates acting on it; the reduced state of $q_0$ is a function of $z_0$ and the wire-0 rotation angles alone, and $z_{1..5}$ have exactly zero influence on the logit. The product head is therefore a single-feature ($z_0$) model with extra idle qubits. In the entangling circuit, the ring moves every $z_i$ into $q_0$ before readout, so all six features can influence the logit. This is depicted in \figureref{fig:circuits}. We do not retrain to ``fix'' the readout; instead we state the consequence plainly: (i) the product-versus-entangling contrast changes two factors at once, entanglement \emph{and} input routing; and (ii) the clean classical-versus-quantum comparison, where both heads consume all six features, is \textbf{MLP versus entangling PQC}. Results are read with this distinction in mind.
+
+\begin{figure}[ht]
+\floatconts
+  {fig:pipeline}
+  {\caption{Shared trunk. A frozen DenseNet-121 is reduced to $z\in\mathbb{R}^{6}$; one of three near-equal-\emph{nominal}-size heads produces a logit; a per-head temperature $T=\exp(\theta)\in[10^{-3},100]$ is fitted on CheXpert validation only. Nominal parameter parity does not imply functional parity; see \figureref{fig:circuits} and Section~\ref{sec:readout}.}}
+  {\includegraphics[width=0.99\linewidth]{figures/fig_pipeline.pdf}}
+\end{figure}
+
+\begin{figure}[ht]
+\floatconts
+  {fig:circuits}
+  {\caption{The two PQC heads as implemented. (a) Product: $Y$-angle embedding, two layers of RX/RY/RZ, no two-qubit gates. Because the readout is $\langle Z_0\rangle$, only $z_0$ reaches the measurement; $z_{1..5}$ have exactly zero effect on the logit. (b) Entangling: identical rotations with a ring of CNOTs after each layer, which brings all six $z_i$ into $q_0$. The product-versus-entangling contrast therefore varies both entanglement and input routing.}}
+  {\includegraphics[width=0.99\linewidth]{figures/fig_circuits.pdf}}
+\end{figure}
+
+\subsection{Training, calibration, and metrics}
+
+Heads are trained with Adam \cite{kingma2015adam} ($\mathrm{lr}=10^{-3}$, weight decay $10^{-4}$), binary cross-entropy with logits, 40 epochs, and early stopping of 8 epochs on validation AUROC. MLP batches are size 64 on CUDA when available; PQC batches are size 16 on CPU. Seeds are 42, 43, and 44. The same CheXpert validation split is then reused to fit a scalar temperature $T=\exp(\theta)$ by L-BFGS on validation logits \cite{guo2017calibration}; CheXpert test and VinDr-CXR are never used for model selection or for $T$.
+\begin{equation}
+\label{eq:temperature}
+\theta^{\star}=\arg\min_{\theta}\ \mathrm{BCE}\!\left(y,\ \sigma\!\left(z/\exp(\theta)\right)\right),\qquad T=\exp(\theta)\in[10^{-3},100].
+\end{equation}
+Calibrated probabilities use $\sigma(\mathrm{logit}/T)$. Metrics, all reported: AUROC, AUPRC, F1 at threshold 0.5, Brier score, and 15-bin ECE/MCE,
+\begin{equation}
+\label{eq:ece}
+\mathrm{ECE}=\sum_{b=1}^{B}\frac{n_b}{n}\bigl|\mathrm{acc}(b)-\mathrm{conf}(b)\bigr|,
+\end{equation}
+with equal-width bins on $[0,1]$. JSON records do not store logits; reliability diagrams are recomputed from checkpoints. A run is $T$-degenerate if the optimizer hit the clamp; those seven runs are retained in the main table and removed only in Appendix~\ref{app:degenerate}.
+
+Calibration is evaluated on \emph{both} VinDr-CXR holdouts. The balanced holdout forces prevalence $0.5$, which equals the training prevalence and can flatter a head trained on balanced data. The natural-prevalence holdout keeps the target's own class frequencies and is the closer proxy for deployment. Reporting only the balanced holdout would hide the direction in which post-hoc calibration can fail; we report both.
+
+A fully trained DenseNet classifier is an unmatched upper bound. Fine-tuning the backbone, adding qubits mid-grid, merging pneumonia with consolidation in the main table, or describing PQC AUROC as quantum advantage would break the protocol.
+
+\section{Experiments}
+
+Forty-five of forty-five scheduled runs finished. VinDr metrics are present for every run. Mean $\pm$ standard deviation is over three seeds. Discrimination is in \tableref{tab:auroc}; calibration and the full metric set are in \tableref{tab:ece}; paired differences versus the matched MLP are in \tableref{tab:paired}; natural-prevalence calibration is in \tableref{tab:natural}. \figureref{fig:main} shows the primary endpoints; \figureref{fig:transfer} shows temperature transfer; \figureref{fig:reliability} shows reliability diagrams.
+
+\subsection{Discrimination is comparable, not better}
+
+On CheXpert test data the MLP is at least as discriminative as either PQC on every primary task (\tableref{tab:auroc}). The cleanest ontology is no finding: MLP $0.837\pm0.003$, product $0.820\pm0.007$, entangling $0.813\pm0.010$. Under VinDr balanced evaluation the ranking is not reversed in a way that would support a quantum story. Product is not uniformly worse on the target---consolidation is the one cell where it is numerically higher ($0.714\pm0.012$ versus MLP $0.682\pm0.035$)---but that gap sits inside seed noise. Across the 12 primary task--seed pairs, product AUROC is below the matched MLP on 9 CheXpert tests and entangling AUROC is below the MLP on 10. With three seeds we report these as descriptive paired counts, not as a significance test; several per-task differences (e.g.\ consolidation product $0.642\pm0.026$ versus MLP $0.652\pm0.030$) overlap within one standard deviation and should not be read as a ranking. AUPRC and F1 follow the same pattern (\tableref{tab:ece}): the MLP is highest or tied on the source for every primary task.
+
+The clean comparison, MLP versus entangling PQC (both use all six features), tells the same story: on VinDr balanced data the entangling head is $0.725\pm0.015$ (no finding) versus MLP $0.736\pm0.008$, and lower on cardiomegaly, pleural effusion and consolidation. There is no cell in which the quantum head dominates the classical head outside seed noise.
+
+\subsection{Entanglement is not a calibrator}
+
+The primary question is calibration, not ranking. Entangling circuits do not yield lower source ECE (\tableref{tab:ece}; \figureref{fig:main}). For no finding, CheXpert test ECE is $0.320\pm0.069$ (MLP), $0.239\pm0.031$ (product), and $0.379\pm0.038$ (entangling). Where a PQC is better calibrated on CheXpert it is the \emph{product} circuit (no finding, pleural effusion)---but the product circuit is the single-feature head, so this is not evidence that entanglement helps; if anything it is the opposite. On VinDr balanced data raw ECE is sometimes \emph{lower} for PQC heads (no finding: MLP $0.250\pm0.081$, product $0.124\pm0.011$, entangling $0.200\pm0.021$; cardiomegaly entangling $0.093$ vs MLP $0.187$). That reduction coexists with weaker or comparable AUROC (\figureref{fig:main}) and does not survive temperature transfer, so it is not a trustworthy calibration advantage; balanced prevalence ($0.5$) also equals the training prevalence, which flatters a head trained on balanced data. Under the target's own prevalence the picture reverses (Section~\ref{sec:natural}). The entangling head on no finding seed 42 is the clearest single-run illustration of failure: it over-predicts the positive class (accuracy $0.560$, sensitivity $0.951$, ECE $0.419$; \figureref{fig:reliability}). Ring CNOTs at two layers with a single-qubit readout increase expressibility in the sense of Sim et al.\ \cite{sim2019expressibility}; they do not give the optimizer a calibration incentive. The pattern is stable across MCE and Brier (\tableref{tab:ece}): the entangling head is not better than the MLP on either.
+
+\subsection{Source-fitted temperature need not travel}
+
+Temperature fitted on CheXpert validation is not a reliable target calibrator (\figureref{fig:transfer}). The intended use of Guo-style scaling is to correct overconfidence on a held-out slice of the same corpus. CheXpert validation and test are natural-prevalence slices of that US corpus; VinDr balanced evaluation forces prevalence $0.5$. A scalar $T$ cannot undo a prevalence and device shift \cite{ovadia2019shift,guo2017calibration}. On no finding product PQC, mean CheXpert ECE falls after scaling ($0.239\to0.153$) while VinDr balanced ECE rises ($0.124\to0.203$)---the same $T$ helps the source and harms the target. Seed 43 of that head is extreme: $T=0.36$ reduces CheXpert ECE from $0.212$ to $0.054$ and increases VinDr balanced ECE from $0.123$ to $0.259$.
+
+Seven of 45 runs hit the clamp $T\in\{0.001,100\}$ (\tableref{tab:degenerate}). Those fits flatten or sharpen probabilities until ECE on one domain is a box-constraint artifact. They remain in \tableref{tab:ece}. Removing them does not reverse the no-finding or pleural-effusion rankings, where $n_{\mathrm{deg}}=0$. The cardiomegaly entangling VinDr-balanced calibrated ECE of $0.039\pm0.064$ is dominated by the $T=100$ run (calibrated ECE $\approx 0$) and is not evidence of successful transfer. Source-fitted $T$ does not systematically help PQC more than MLP on VinDr-CXR.
+
+\subsection{The target's own prevalence changes the calibration story}
+\label{sec:natural}
+
+On the natural-prevalence VinDr holdout (\tableref{tab:natural}) the ordering is not the balanced one. The entangling head, which looked well-calibrated on cardiomegaly under balanced sampling (raw ECE $0.093$), is the \emph{worst} calibrated under natural prevalence (raw ECE $0.295$). The MLP is more stable ($0.128$). Temperature scaling fitted on the source does not repair this and sometimes worsens it (cardiomegaly entangling raw $0.295\to$ scaled $0.328$). We report this because a balanced-only calibration table would have pointed the opposite way. ECE is also sensitive to bin width for pleural effusion (10/15/20 bins give product $0.054/0.072/0.087$ on CheXpert), consistent with Nixon et al.\ \cite{nixon2019measuring}; the qualitative head ordering is unchanged.
+
+\texttt{pneumonia\_proxy} CheXpert test prevalence is $0.024$ (12 positives in 500). AUROC numbers on that split are high-variance and are not pneumonia performance (\tableref{tab:appendix}).
+
+\begin{table}[ht]
+\floatconts
+  {tab:splits}
+  {\caption{Frozen evaluation-split sizes. Train is class-balanced at $n=2000$. VinDr balanced consolidation is 353/647. Splits were not resampled after the grid.}}
+  {\small\begin{tabular}{lrrrrrr}
+  \toprule
+  Task & CheX.\ $n_+$ & prev. & VinDr-bal $n_+$ & prev. & VinDr-nat $n_+$ & prev. \\
+  \midrule
+  No finding & 41 & 0.082 & 500 & 0.500 & 702 & 0.702 \\
+  Cardiomegaly & 63 & 0.126 & 500 & 0.500 & 164 & 0.164 \\
+  Pleural effusion & 225 & 0.450 & 500 & 0.500 & 62 & 0.062 \\
+  Consolidation & 35 & 0.070 & 353 & 0.353 & 27 & 0.027 \\
+  Pneumonia proxy & 12 & 0.024 & 500 & 0.500 & 55 & 0.055 \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+\begin{table}[ht]
+\floatconts
+  {tab:auroc}
+  {\caption{Discrimination (secondary). Mean$\pm$std over seeds $\{42,43,44\}$. AUROC on raw logits.}}
+  {\small\begin{tabular}{llccc}
+  \toprule
+  Task & Head & AUROC CheXpert & AUROC VinDr-bal & AUROC VinDr-nat \\
+  \midrule
+  No finding & MLP & $0.837\pm0.003$ & $0.736\pm0.008$ & $0.736\pm0.015$ \\
+  No finding & Product & $0.820\pm0.007$ & $0.669\pm0.003$ & $0.667\pm0.012$ \\
+  No finding & Entangling & $0.813\pm0.010$ & $0.725\pm0.015$ & $0.729\pm0.009$ \\
+  Cardiomegaly & MLP & $0.681\pm0.005$ & $0.774\pm0.012$ & $0.757\pm0.014$ \\
+  Cardiomegaly & Product & $0.637\pm0.036$ & $0.772\pm0.028$ & $0.768\pm0.019$ \\
+  Cardiomegaly & Entangling & $0.679\pm0.006$ & $0.765\pm0.021$ & $0.756\pm0.022$ \\
+  Pleural effusion & MLP & $0.761\pm0.004$ & $0.665\pm0.018$ & $0.659\pm0.004$ \\
+  Pleural effusion & Product & $0.752\pm0.018$ & $0.643\pm0.010$ & $0.625\pm0.013$ \\
+  Pleural effusion & Entangling & $0.748\pm0.011$ & $0.619\pm0.035$ & $0.614\pm0.011$ \\
+  Consolidation & MLP & $0.652\pm0.030$ & $0.682\pm0.035$ & $0.680\pm0.048$ \\
+  Consolidation & Product & $0.642\pm0.026$ & $0.714\pm0.012$ & $0.691\pm0.028$ \\
+  Consolidation & Entangling & $0.613\pm0.033$ & $0.604\pm0.056$ & $0.586\pm0.073$ \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+\begin{table}[ht]
+\floatconts
+  {tab:ece}
+  {\caption{Calibration and remaining discrimination metrics (primary), mean$\pm$std over seeds. ECE is 15-bin; $T$ is fitted on CheXpert validation only. AUPRC, F1, Brier and MCE are all on CheXpert test. Raw VinDr-balanced ECE is shown as bars in \figureref{fig:main}; natural-prevalence ECE is in \tableref{tab:natural}.}}
+  {\scriptsize\setlength{\tabcolsep}{3.2pt}\begin{tabular}{@{}llccccc@{}}
+  \toprule
+  Task & Head & ECE CheX (raw$\to$cal) & AUPRC & F1 & Brier & MCE \\
+  \midrule
+  No finding & MLP & $0.320\pm0.069\to0.317\pm0.105$ & 0.318 & 0.313 & 0.192 & 0.572 \\
+  No finding & Product & $0.239\pm0.031\to0.153\pm0.087$ & 0.254 & 0.292 & 0.134 & 0.636 \\
+  No finding & Entangling & $0.379\pm0.038\to0.375\pm0.050$ & 0.307 & 0.272 & 0.227 & 0.596 \\
+  Cardiomegaly & MLP & $0.276\pm0.082\to0.219\pm0.134$ & 0.242 & 0.245 & 0.195 & 0.528 \\
+  Cardiomegaly & Product & $0.315\pm0.076\to0.262\pm0.160$ & 0.184 & 0.141 & 0.214 & 0.484 \\
+  Cardiomegaly & Entangling & $0.422\pm0.048\to0.376\pm0.001$ & 0.223 & 0.279 & 0.288 & 0.490 \\
+  Pleural effusion & MLP & $0.112\pm0.036\to0.092\pm0.034$ & 0.697 & 0.678 & 0.211 & 0.225 \\
+  Pleural effusion & Product & $0.072\pm0.005\to0.075\pm0.012$ & 0.685 & 0.631 & 0.206 & 0.160 \\
+  Pleural effusion & Entangling & $0.105\pm0.032\to0.100\pm0.036$ & 0.681 & 0.680 & 0.218 & 0.235 \\
+  Consolidation & MLP & $0.417\pm0.047\to0.386\pm0.047$ & 0.148 & 0.159 & 0.241 & 0.463 \\
+  Consolidation & Product & $0.362\pm0.102\to0.300\pm0.196$ & 0.132 & 0.126 & 0.208 & 0.602 \\
+  Consolidation & Entangling & $0.407\pm0.011\to0.408\pm0.021$ & 0.150 & 0.157 & 0.252 & 0.587 \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+\begin{table}[ht]
+\floatconts
+  {tab:paired}
+  {\caption{Paired differences versus the matched MLP (12 primary pairs). Negative $\Delta$AUROC: PQC worse. Negative $\Delta$ECE: PQC better calibrated. With $n=3$ seeds these are descriptive means, not a significance test.}}
+  {\small\setlength{\tabcolsep}{3.5pt}\begin{tabular}{@{}lcccccc@{}}
+  \toprule
+  Head & $\Delta$AUROC & $\Delta$ECE & $\Delta$AUROC & $\Delta$ECE & worse & better \\
+       & src & src & tgt & tgt & AUROC & ECE \\
+  \midrule
+  Product & $-0.020\pm0.034$ & $-0.034\pm0.084$ & $-0.015\pm0.042$ & $-0.053\pm0.082$ & 9/12 & 8/12 \\
+  Entangling & $-0.019\pm0.030$ & $+0.047\pm0.087$ & $-0.036\pm0.048$ & $-0.058\pm0.077$ & 10/12 & 3/12 \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+\begin{table}[ht]
+\floatconts
+  {tab:natural}
+  {\caption{Calibration on the natural-prevalence VinDr-CXR holdout (primary tasks). ECE raw and source-$T$-scaled. This holdout keeps the target's own class frequencies; the balanced holdout forces prevalence $0.5$. The entangling/consolidation cell is thin (27 positives) and is read as a trend.}}
+  {\small\setlength{\tabcolsep}{4pt}\begin{tabular}{@{}llcc@{}}
+  \toprule
+  Task & Head & ECE VinDr-nat raw & ECE VinDr-nat scaled \\
+  \midrule
+  No finding & MLP & $0.082\pm0.047$ & $0.083\pm0.029$ \\
+  No finding & Product & $0.165\pm0.120$ & $0.225\pm0.165$ \\
+  No finding & Entangling & $0.085\pm0.026$ & $0.111\pm0.042$ \\
+  Cardiomegaly & MLP & $0.128\pm0.040$ & $0.116\pm0.114$ \\
+  Cardiomegaly & Product & $0.239\pm0.089$ & $0.188\pm0.149$ \\
+  Cardiomegaly & Entangling & $0.295\pm0.040$ & $0.328\pm0.007$ \\
+  Pleural effusion & MLP & $0.229\pm0.076$ & $0.278\pm0.076$ \\
+  Pleural effusion & Product & $0.235\pm0.013$ & $0.224\pm0.024$ \\
+  Pleural effusion & Entangling & $0.320\pm0.046$ & $0.337\pm0.038$ \\
+  Consolidation & MLP & $0.390\pm0.055$ & $0.347\pm0.129$ \\
+  Consolidation & Product & $0.343\pm0.069$ & $0.275\pm0.226$ \\
+  Consolidation & Entangling & $0.367\pm0.008$ & $0.382\pm0.079$ \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+\begin{figure}[ht]
+\floatconts
+  {fig:main}
+  {\caption{Primary endpoints on VinDr-CXR (balanced). Left: AUROC. Right: raw ECE. Bars are means over three seeds; whiskers are std. Lower ECE is better. The MLP is not beaten by either PQC head outside seed noise.}}
+  {\includegraphics[width=0.99\linewidth]{figures/fig_main_results.pdf}}
+\end{figure}
+
+\begin{figure}[ht]
+\floatconts
+  {fig:transfer}
+  {\caption{Change in ECE after source-fitted temperature scaling on the 12 primary task--head cells. Lower-left: both domains improve. Upper-left: CheXpert improves and VinDr-CXR degrades. The product head and the MLP both sit in the upper-left for several tasks; a source-fitted $T$ is not a target calibrator.}}
+  {\includegraphics[width=0.52\linewidth]{figures/fig_calibration_transfer.pdf}}
+\end{figure}
+
+\begin{figure}[ht]
+\floatconts
+  {fig:reliability}
+  {\caption{Reliability diagrams, no finding, CheXpert test, seed 42. Marker area $\propto$ bin mass. The entangling PQC over-predicts the positive class (accuracy $0.56$, ECE $0.419$); source-fitted temperature scaling does not restore a diagonal for the product head on VinDr-CXR.}}
+  {\includegraphics[width=0.99\linewidth]{figures/fig_reliability.pdf}}
+\end{figure}
+
+\section{Discussion}
+
+The protocol answers a smaller question than hybrid-imaging abstracts usually ask, and the answer is negative. A six-qubit expectation head is not a more trustworthy replacement for a 65-parameter MLP sitting on the same six angles. That is not a statement about quantum machine learning in general. It is a statement about this ansatz, this readout, this frozen trunk, this sample size, and this shift.
+
+Three observations follow. First, a single-qubit readout makes ``matched capacity'' a subtle notion. The product circuit here has the same nominal parameter count as the entangling circuit, but it functionally sees only one feature. Two heads of equal size can differ enormously in what they are able to compute. Second, the product circuit---not the entangling circuit---is the PQC that occasionally lowers source ECE. Bounded $\langle Z_0\rangle\in[-1,1]$ plus a learned scale and bias is a different hypothesis class from an unconstrained MLP, and a one-feature model has less opportunity to overfit; this is a property of the head's \emph{capacity}, not of entanglement. Third, adding a CNOT ring at two layers with a single-qubit observable increases expressibility without giving the optimizer a calibration incentive; on no finding seed 42 the entangling head becomes a high-sensitivity, low-accuracy over-predictor.
+
+Temperature scaling fails for a structural reason that does not require a quantum story. A scalar $T$ fitted to source negative log-likelihood cannot undo a prevalence and device shift. When $T$ hits $0.001$ or $100$, ECE on one domain becomes a box-constraint artifact. Reporting those runs, rather than dropping them, is part of the result. Reporting the natural-prevalence holdout, where the entangling head is the worst-calibrated on cardiomegaly, is the other part.
+
+VinDr-CXR has no Pneumonia class. Mapping CheXpert Pneumonia onto Consolidation $\cup$ Infiltration changes the label definition. We leave that task in the appendix with the flag the code already carries.
+
+\section{Limitations}
+
+The circuit has six qubits, two layers, and a single observable. The product head, as implemented, is a one-feature model; a future grid should either read out $\sum_i\langle Z_i\rangle$ or report locality explicitly as we do here. The backbone is frozen, so the PQC never sees pixels. Simulation uses \texttt{default.qubit}, not hardware noise. Sample sizes are small (train 2\,000; val/test 500; VinDr 1\,000). Three seeds cannot support a confirmatory hypothesis test. Temperature is a scalar with a hard clamp. ECE uses 15 equal-width bins; rare positives make several bins empty \cite{nixon2019measuring}. VinDr any-vote ignores radiologist disagreement. ImageNet-normalized $224\times 224$ RGB conversion is a crude CXR preprocessing. The six-dimensional bottleneck and the six-qubit count are fixed by design and were not ablated. No clinical deployment is claimed.
+
+\section{Conclusion}
+
+Under the protocol actually run---frozen ImageNet DenseNet-121, shared $z\in\mathbb{R}^{6}$, six-qubit two-layer product and ring-CNOT heads, noiseless \texttt{default.qubit}, three seeds---neither PQC head is a more trustworthy replacement for the matched MLP on CheXpert $\to$ VinDr-CXR. Discrimination is comparable or slightly worse; entanglement does not reduce ECE; source-fitted temperature scaling can harm the target; and on the natural-prevalence holdout the entangling head can be the worst-calibrated. We also showed that a single-qubit readout makes nominal capacity matching misleading: the product head is functionally one-feature. Those are empirical boundaries for this capacity and shift, not evidence against quantum machine learning in general.
+
+\clearpage
+\midlacknowledgments{No external funding was received. The author thanks the maintainers of CheXpert and VinDr-CXR for releasing de-identified public datasets. Large language models were used only for copy-editing; the author is responsible for all scientific content, numbers, and claims.}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+
+\section{Pneumonia proxy (ontology shift)}
+
+\begin{table}[h]
+\floatconts
+  {tab:appendix}
+  {\caption{\texttt{pneumonia\_proxy} maps CheXpert Pneumonia to VinDr Consolidation $\cup$ Infiltration. Not a pneumonia detector. Product ECE collapse on CheXpert coexists with two $T=0.001$ seeds.}}
+  {\setlength{\tabcolsep}{4pt}\begin{tabular}{@{}lcccc@{}}
+  \toprule
+  Head & AUROC CheX. & ECE CheX. & AUROC VinDr-bal & ECE VinDr \\
+       & & raw$\to$cal & & raw$\to$cal \\
+  \midrule
+  MLP & $0.662\pm0.071$ & $0.467\to0.436$ & $0.629\pm0.044$ & $0.059\to0.024$ \\
+  Product & $0.625\pm0.072$ & $0.338\to0.099$ & $0.582\pm0.062$ & $0.113\to0.446$ \\
+  Entangling & $0.711\pm0.032$ & $0.438\to0.437$ & $0.609\pm0.025$ & $0.087\to0.083$ \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+\section{$T$-degenerate runs}
+\label{app:degenerate}
+
+\begin{table}[h]
+\floatconts
+  {tab:degenerate}
+  {\caption{Runs whose L-BFGS temperature hit the clamp. Retained in the main tables. Cardiomegaly entangling seed 43 VinDr-balanced calibrated ECE $\approx 0$ is a $T=100$ artifact.}}
+  {\setlength{\tabcolsep}{4pt}\begin{tabular}{@{}llrcc@{}}
+  \toprule
+  Task & Head & Seed & $T$ & ECE CheX.\ / VinDr-bal \\
+       & & & & raw/cal \\
+  \midrule
+  Cardiomegaly & Entangling & 43 & 100 & 0.476/0.375 \quad 0.116/0.000 \\
+  Consolidation & MLP & 43 & 100 & 0.470/0.430 \quad 0.152/0.147 \\
+  Consolidation & Product & 42 & 0.001 & 0.246/0.074 \quad 0.051/0.352 \\
+  Consolidation & Product & 44 & 100 & 0.439/0.430 \quad 0.107/0.147 \\
+  Pneumonia proxy & MLP & 43 & 100 & 0.522/0.476 \quad 0.115/0.001 \\
+  Pneumonia proxy & Product & 42 & 0.001 & 0.350/0.096 \quad 0.058/0.414 \\
+  Pneumonia proxy & Product & 43 & 0.001 & 0.384/0.194 \quad 0.085/0.457 \\
+  \bottomrule
+  \end{tabular}}
+\end{table}
+
+Dropping these seven runs does not reverse the primary conclusions on no finding or pleural effusion ($n_{\mathrm{deg}}=0$). Consolidation product then has a single remaining seed; that cell is too thin to interpret.
+
+\section{Additional reliability diagrams}
+
+Reliability diagrams below are generated from dumped checkpoint logits, not from JSON.
+
+\begin{figure}[h]
+\floatconts
+  {fig:rel-cardio}
+  {\caption{Reliability diagrams, cardiomegaly, seed 42.}}
+  {\includegraphics[width=0.88\linewidth]{figures/fig_reliability_cardiomegaly_seed42.pdf}}
+\end{figure}
+
+\begin{figure}[h]
+\floatconts
+  {fig:rel-pleural}
+  {\caption{Reliability diagrams, pleural effusion, seed 42.}}
+  {\includegraphics[width=0.88\linewidth]{figures/fig_reliability_pleural_effusion_seed42.pdf}}
+\end{figure}
+
+\begin{figure}[h]
+\floatconts
+  {fig:rel-cons}
+  {\caption{Reliability diagrams, consolidation, seed 42.}}
+  {\includegraphics[width=0.88\linewidth]{figures/fig_reliability_consolidation_seed42.pdf}}
+\end{figure}
+
+\begin{figure}[h]
+\floatconts
+  {fig:rel-pna}
+  {\caption{Reliability diagrams, pneumonia proxy, seed 42 (appendix task).}}
+  {\includegraphics[width=0.88\linewidth]{figures/fig_reliability_pneumonia_proxy_seed42.pdf}}
+\end{figure}
+
+\section{Reproducibility}
+
+Interpreter: Python 3.10, PyTorch 2.6.0+cu124, PennyLane 0.38.0. Config: \texttt{default.yaml}. Grid: \texttt{run\_queue.py} (45/45 complete). Tables: \texttt{all\_runs.csv}. Checkpoints: the \texttt{runs/} directory. Splits were not resampled after the grid. Logits for the reliability diagrams are dumped from the checkpoints by \texttt{dump\_logits.py}; every figure is regenerated by the script \texttt{make\_figures\_final.py}. Training code, frozen split files, and run JSON will be released with the camera-ready version if the paper is accepted; they are not on a public repository at submission. CheXpert and VinDr-CXR are public de-identified datasets. The author has no competing interests.
+
+\end{document}

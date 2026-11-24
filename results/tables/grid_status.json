@@ -1,0 +1,8 @@
+{
+  "n_expected": 45,
+  "n_done": 45,
+  "n_missing": 0,
+  "missing": [],
+  "has_vindr": true,
+  "note": "Grid is 5 tasks \u00d7 3 heads \u00d7 3 seeds. VinDr columns are copied from each results/tables/*_seed*.json when present; they are not imputed. pneumonia_proxy is ontology_shift and belongs in the appendix."
+}

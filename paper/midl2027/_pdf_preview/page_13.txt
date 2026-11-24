@@ -1,0 +1,50 @@
+Matched-capacity PQC heads under CXR shift
+Laleh Seyyed-Kalantari, Haoran Zhang, Matthew B. A. McDermott, Irene Y. Chen, and
+Marzyeh Ghassemi. Underdiagnosis bias of artificial intelligence algorithms applied to
+chest radiographs in under-served patient populations. Nature Medicine, 27:2176–2182,
+2021.
+Sukin Sim, Peter D. Johnson, and Al´an Aspuru-Guzik. Expressibility and entangling ca-
+pability of parameterized quantum circuits for hybrid quantum-classical algorithms. Ad-
+vanced Quantum Technologies, 2(12):1900070, 2019.
+Xiaosong Wang, Yifan Peng, Le Lu, Zhiyong Lu, Mohammadhadi Bagheri, and Ronald M.
+Summers.
+ChestX-ray8:
+Hospital-scale Chest X-ray Database and Benchmarks on
+Weakly-Supervised Classification and Localization of Common Thorax Diseases. Pro-
+ceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages
+2097–2106, 2017.
+John R. Zech, Marcus A. Badgeley, Manway Liu, Anthony B. Costa, Joseph J. Titano,
+and Eric K. Oermann. Variable generalization performance of a deep learning model to
+detect pneumonia in chest radiographs: A cross-sectional study. PLOS Medicine, 15(11):
+e1002683, 2018.
+Appendix A. Pneumonia proxy (ontology shift)
+Table 5: pneumonia proxy maps CheXpert Pneumonia to VinDr Consolidation ∪Infiltra-
+tion. Not a pneumonia detector. Product ECE collapse on CheXpert coexists
+with two T = 0.001 seeds.
+Head
+AUROC CheX.
+ECE raw→cal CheX.
+AUROC VinDr-bal
+ECE raw→cal VinDr
+MLP
+0.662 ± 0.071
+0.467 →0.436
+0.629 ± 0.044
+0.059 →0.024
+Product
+0.625 ± 0.072
+0.338 →0.099
+0.582 ± 0.062
+0.113 →0.446
+Entangling
+0.711 ± 0.032
+0.438 →0.437
+0.609 ± 0.025
+0.087 →0.083
+Appendix B. T-degenerate runs
+Dropping these seven runs does not reverse the primary conclusions on no finding or pleural
+effusion (ndeg = 0). Consolidation product then has a single remaining seed; that cell is too
+thin to interpret.
+Appendix C. Additional reliability diagrams
+Reliability diagrams below are generated from dumped checkpoint logits, not from JSON.
+13

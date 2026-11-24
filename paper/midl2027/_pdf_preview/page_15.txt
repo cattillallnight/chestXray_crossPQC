@@ -1,0 +1,194 @@
+Matched-capacity PQC heads under CXR shift
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Accuracy
+MLP · CheXpert test
+raw ECE=0.070
+T=1.3 ECE=0.053
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Product PQC · CheXpert test
+raw ECE=0.072
+T=1.1 ECE=0.087
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Entangling PQC · CheXpert test
+raw ECE=0.110
+T=1.2 ECE=0.091
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Confidence
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Accuracy
+MLP · VinDr balanced
+raw ECE=0.248
+T=1.3 ECE=0.207
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Confidence
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Product PQC · VinDr balanced
+raw ECE=0.172
+T=1.1 ECE=0.161
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Confidence
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 Entangling PQC · VinDr balanced
+raw ECE=0.100
+T=1.2 ECE=0.091
+Reliability diagrams, Pleural effusion, seed 42 (bin size  mass)
+Figure 7: Reliability diagrams, pleural effusion, seed 42.
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Accuracy
+MLP · CheXpert test
+raw ECE=0.402
+T=0.65 ECE=0.391
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Product PQC · CheXpert test
+raw ECE=0.246
+T=0.001 ECE=0.074
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Entangling PQC · CheXpert test
+raw ECE=0.420
+T=3.2 ECE=0.426
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Confidence
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Accuracy
+MLP · VinDr balanced
+raw ECE=0.093
+T=0.65 ECE=0.079
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Confidence
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Product PQC · VinDr balanced
+raw ECE=0.051
+T=0.001 ECE=0.352
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Confidence
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 Entangling PQC · VinDr balanced
+raw ECE=0.063
+T=3.2 ECE=0.119
+Reliability diagrams, Consolidation, seed 42 (bin size  mass)
+Figure 8: Reliability diagrams, consolidation, seed 42.
+15

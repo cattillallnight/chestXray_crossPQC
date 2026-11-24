@@ -1,0 +1,45 @@
+Quyen
+gates, and an otherwise identical PQC with a CNOT ring. The circuit is a standard Pen-
+nyLane construction (Bergholm et al., 2018). Figure 1 is the entire model.
+Three questions follow from that figure. First, on the same six-dimensional bottleneck,
+do the PQC heads differ from the MLP in AUROC when CheXpert-trained models are
+evaluated on VinDr-CXR? That is secondary.
+Second—the primary question—does en-
+tanglement reduce expected calibration error (ECE), maximum calibration error (MCE),
+or Brier score under shift? Third, does a scalar temperature fitted on CheXpert valida-
+tion logits (Guo et al., 2017) calibrate PQC heads more effectively than the MLP on the
+Vietnamese target?
+The paper does not claim a new ansatz, quantum advantage, hardware execution,
+or state-of-the-art CXR detection. What the implementation can support is a matched-
+capacity protocol, a fully reported negative grid, and a shift result for post-hoc calibration.
+All heads consume the same z ∈R6. Product and entangling circuits differ only by a CNOT
+ring, which adds no parameters (6 188 versus 6 215). The bottleneck is not detached, so
+gradients into W are part of every comparison. A fully trained DenseNet classifier is an
+unmatched upper bound and is not used as a baseline. Forty-five of forty-five scheduled
+runs are included, among them seven temperature fits that hit the clamp T ∈{0.001, 100}.
+CheXpert uncertain labels are dropped (U-Ignore) (Irvin et al., 2019). VinDr boxes use an
+any-vote (Nguyen et al., 2022). Findings that share a name are reported in the main tables;
+pneumonia is not, because VinDr-CXR has no Pneumonia class.
+2. Related work
+2.1. Confidence calibration
+A probabilistic classifier is calibrated when, among instances predicted with confidence p,
+the empirical frequency of the predicted event is also p. Brier (Brier, 1950) introduced
+a proper scoring rule that jointly penalizes discrimination and calibration. Naeini et al.
+(Naeini et al., 2015) defined ECE by binning confidence and averaging the absolute gap
+between accuracy and confidence; Nixon et al. (Nixon et al., 2019) later documented the
+sensitivity of that estimator to binning. Guo et al. (Guo et al., 2017) showed that modern
+deep networks are systematically overconfident and that a single temperature T fitted by
+negative log-likelihood on a validation set is a strong, almost parameter-free baseline. None
+of these methods assumes that the validation distribution matches the deployment distri-
+bution. Ovadia et al. (Ovadia et al., 2019) showed that predictive uncertainty, including
+temperature-scaled confidence, degrades under covariate and semantic shift. We use Guo-
+style scalar temperature as the third research question, fitted only on CheXpert validation
+logits.
+2.2. Chest radiography, labels, and shift
+ChestX-ray8 (Wang et al., 2017), CheXpert (Irvin et al., 2019), MIMIC-CXR (Johnson
+et al., 2019), and VinDr-CXR (Nguyen et al., 2022) differ in geography, devices, report
+style, and label generation. CheXNet (Rajpurkar et al., 2017) reported radiologist-level
+pneumonia detection on a single corpus; subsequent analyses showed that such numbers
+need not travel.
+Zech et al. (Zech et al., 2018) documented hospital-specific shortcuts.
+2

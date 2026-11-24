@@ -1,0 +1,21 @@
+{
+  "n_runs": 45,
+  "n_vindr": 45,
+  "n_T_degenerate": 7,
+  "figures": [
+    "fig_auroc_ece_bars.pdf",
+    "fig_auroc_ece_bars.png",
+    "fig_reliability_cardiomegaly_seed42.pdf",
+    "fig_reliability_cardiomegaly_seed42.png",
+    "fig_reliability_consolidation_seed42.pdf",
+    "fig_reliability_consolidation_seed42.png",
+    "fig_reliability_no_finding_seed42.pdf",
+    "fig_reliability_no_finding_seed42.png",
+    "fig_reliability_pleural_effusion_seed42.pdf",
+    "fig_reliability_pleural_effusion_seed42.png",
+    "fig_reliability_pneumonia_proxy_seed42.pdf",
+    "fig_reliability_pneumonia_proxy_seed42.png",
+    "fig_temperature_transfer.pdf",
+    "fig_temperature_transfer.png"
+  ]
+}

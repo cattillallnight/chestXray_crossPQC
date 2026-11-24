@@ -1,0 +1,682 @@
+pages 6
+===== PAGE 1 =====
+Q-Drop: Optimizing Quantum Orthogonal Networks
+with Statistic Pruning and Dynamic Dropout
+Pham Thai Quang Nguyen ∗, Tran Cat Khanh ∗, Y ared Abera Ergu ∗, V an-Linh Nguyen∗
+∗Dept. of Computer Science and Information Engineering, National Chung Cheng University, Chiayi, Taiwan
+21139035@student.hcmute.edu.vn, khanh.tc204916@sis.hust.edu.vn, {yared111p, nvlinh}@cs.ccu.edu.tw
+Abstract—Quantum machine learning (QML) holds immense
+potential for revolutionizing computational intelligence, yet faces
+signiﬁcant challenges in optimizing quantum neural network
+architectures for practical implementation. This paper intro-
+duces Q-Drop, an innovative quantum adaptation technique
+that enhances parameterized quantum circuits (PQCs) for train-
+ing performance. The system includes two novel optimization
+strategies: statistical pruning and dynamic dropout (circuit ﬂip-
+ﬂops), which signiﬁcantly improve the learning performance and
+robustness of quantum orthogonal neural networks. Evaluation
+results across standard (MNIST, Fashion-MNIST) and medical
+imaging (Pneumonia-MNIST, Retina-MNIST) datasets demon-
+strate substantial performance gains. Notably, the approach
+achieves up to 94.3% accuracy on medical image classiﬁcation
+and 98.7% accuracy on standard image datasets, outperforming
+existing quantum machine learning methods. By addressing
+critical challenges in quantum neural network training, this work
+highlights the potential of applying quantum machine learning
+to enhance performance for classical computer vision tasks and
+QML-driven scheduling optimization in quantum networks.
+Index Terms —Quantum machine learning, Orthogonal neu-
+ral network, Image classiﬁcation, Statistical pruning, Dynamic
+dropout
+I. I NTRODUCTION
+Quantum computing is a rapidly evolving ﬁeld that lever-
+ages principles of quantum mechanics, such as superposition
+and entanglement, to unlock computational possibilities be-
+yond classical limits [1]. At its core, quantum computing
+aims to tackle problems that remain intractable for classi-
+cal methods, including certain types of optimization, high-
+dimensional data processing, and complex pattern recognition.
+Quantum computings power spans healthcare, cryptography,
+and space exploration, driving breakthroughs in drug discov-
+ery, personalized medicine, and secure communications like
+quantum key distribution (QKD) [2], [3]. Quantum Machine
+Learning (QML) merges quantum computing with machine
+learning, potentially addressing the computational limitations
+of conventional deep learning (DL) [4]. While DL models
+often struggle with high-dimensional feature spaces, model
+complexity, and data sparsity, QML may offer solutions by
+leveraging quantum states to represent and process information
+compactly. This compact representation could allow QML
+algorithms to explore vast search spaces more efﬁciently and
+accelerate convergence on complex problems that challenge
+DL due to computational bottlenecks. However, it is crucial
+to recognize that QML may not inherently resolve hardware-
+Gradient magnitude accumulation window
+n+1 n+2 n+m
+Sample with a probability distribution
+with pruning ratio
+Normalization
+1
+42
+3 1
+42
+3
+Statistical/nobreakspace Pruning window
+Train step
+1
+42
+3
+1 2 3 4
+1 2 3 4
+1 2 3 4
+1 2 3 4
+Accumulated
+gradients/nobreakspace
+magnitude
+Current
+gradients/nobreakspace
+magnitude
+n321
+1 2 3 4
+1 2 3 4
+1 2 3 4
+probability
+Legend
+Freezed Updated UpdatedDropped
+1
+5 2
+3 6
+4
+52
+4
+1
+52
+3 6
+4
+Droppout stage
+n n+1 n+2
+1 3 6 1 3 6
+Epochs
+1 2 3 4
+Pruning stage/nobreakspace
+Fig. 1: Comparative visualization of two QML methods utiliz-
+ing VQCs: (top) Gradient Accumulation with Probability Dis-
+tribution and (bottom) Dropout Stages. The statistical pruning
+method encompasses normalization, pruning, and gate updates.
+related issues in quantum computing, such as high error rates,
+noise, or decoherence [5].
+Realizing the full potential of QML relies on parallel ad-
+vances in quantum hardware and error-correction techniques.
+Beyond hardware improvements, expanding QMLs capabili-
+ties also requires structural adjustments, such as optimizing
+quantum circuit architectures through Parameterized Quantum
+Circuits (PQCs). Among PQCs, Variational Quantum Circuits
+(VQCs) are particularly promising, as they use tunable quan-
+tum gates to tackle complex machine-learning tasks and handle
+both classical and quantum data [6]. Further enhancements
+include improving quantum feature maps and noise-resilient
+training methods. These core-level reﬁnements in QML mod-
+els can improve the robustness, accuracy, and adaptability
+of QML algorithms, allowing them to operate more effec-
+tively within current hardware constraints. Quantum-inspired
+models, such as quantum neural networks (QNNs), leverage
+2025 IEEE International Conference on Communications; Selected Areas in Communications: Quantum Communications and 
+Information Technology
+979-8-3315-0521-9/25/$31.00 ©2025 IEEE 2394
+ICC 2025 - IEEE International Conference on Communications | 979-8-3315-0521-9/25/$31.00 ©2025 IEEE | DOI: 10.1109/ICC52391.2025.11161668
+Authorized licensed use limited to: UNIVERSIDADE DE SAO PAULO. Downloaded on August 02,2026 at 03:27:45 UTC from IEEE Xplore.  Restrictions apply. 
+===== PAGE 2 =====
+the inherent parallelism of quantum computing and exhibit
+enhanced learning capabilities. Several recent studies laid
+out the groundwork for quantum machine learning [7], [8],
+quantum orthogonal neural network (QONN) [9], and Entangle
+Dropout [10]. Building on these ideas, our proposed approach
+selectively drops out the gates on a single wire during training.
+The method also incorporates new quantum statistical pruning
+and dynamic dropout techniques to improve model robust-
+ness and efﬁciency, particularly in quantum neural networks
+(QNNs). Speciﬁcally, the approach leverages PQCs to enhance
+quantum networks’ accuracy and robustness, as illustrated in
+Figure 1. The primary novelty is to address the overﬁtting issue
+for quantum-circuit-based models by introducing a unique
+circuit ﬂip-ﬂop mechanism at each training epoch to improve
+quantum ML training stability, offering a new approach to
+quantum circuit-based learning optimization.
+II. M ETHODOLOGY
+A. Quantum Orthogonal Networks
+Classical orthogonal neural networks (OrthoNN) offer no-
+table advantages, such as preserving information ﬂow and
+mitigating vanishing or exploding gradients, stabilizing, and
+improving training efﬁciency. These are models whose weight
+matrices are orthogonal. A square matrix seems to have
+orthogonality as long as the multiplication between it and its
+transpose equals an identity matrix as in Equation (1). Their
+enhanced generalization in [11] leads to better performance on
+unseen data, reducing overﬁtting and improving effectiveness
+in various deep-learning applications.
+A· A⊤ = In =
+⎛
+⎜⎜⎜⎝
+10··· 0
+01··· 0
+... ... . . . ...
+00··· 1
+⎞
+⎟⎟⎟⎠ (1)
+In a single layer, classical OrthoNNs perform matrix mul-
+tiplication with a computational complexity of O(n2) for an
+n×n orthogonal matrix, and this orthogonal approach has been
+successfully extended to CNN. However, maintaining orthog-
+onality during gradient descent presents signiﬁcant challenges,
+as achieving perfect orthogonality is computationally intensive
+with a complexity of O(n3). Consequently, existing algo-
+rithms focus on approximating orthogonality by employing
+regularization techniques during weight updates, recognizing
+that exact preservation is impractical.
+To perform this operation quantumly, we generalize the
+work of [9] and utilize their designs as a promising ap-
+proach for creating trainable quantum circuits. The quantum
+orthogonal neural network in this work features a pyramidal
+structure similar to Figure 2(a), where each layer consists of
+a quantum orthogonal operation. This operation applies to a
+unary-basis quantum state, producing a transformed state. The
+key component is the Reconﬁgurable Beam Splitter (RBS)
+gate, a custom-designed gate that preserves the weight matrix’s
+orthogonality. The weight matrix, represented by the unitary
+matrix W, is inherently orthogonal due to the unitary nature of
+q0
+q1
+q2
+q3
+q4
+q5
+RBS RBS RBS RBS RBS
+RBS
+RBS RBS
+RBS
+RBS
+RBS
+RBS
+RBS
+RBS
+RBS
+(a) Pyramidal Circuit
+q0
+q1
+q2
+q3
+q4
+q5
+RBS
+RBS
+RBS
+RBS
+RBS
+(b) V ector Loader Circuit
+Fig. 2: Quantum orthogonal circuit for 6 qubits: (a) Pyramidal
+Circuit, (b) V ector Loader.
+Fig. 3: Two-qubit RBS gate decomposition method, illustrating
+the sequences of gates utilized in each approach.
+quantum operations. However, the quantum orthogonal neural
+network underperforms compared to its classical counterpart
+due to limited boosting techniques in quantum machine learn-
+ing. Our methods in section II-B and section II-C will show
+a strong model for QML.
+One of the key advantages of the RBS gate is its ease
+of construction, which uses a small number of fundamental
+quantum gates. Speciﬁcally, an RBS gate comprises four
+Hadamard gates, two Y -rotation gates, and two controlled-Z
+gates. Figure 3 displays the RBS gate in detail, while the equa-
+tion is deﬁned as in Equation (2). Classical Orthogonal Neural
+Networks (OrthoNNs) enhance neural network performance by
+imposing orthogonality constraints on weight matrices [11] as
+given by
+RBS (θ)=
+⎛
+⎜⎜⎝
+10 0 0
+0c o s θ sinθ 0
+0 −sinθ cosθ 0
+00 0 1
+⎞
+⎟⎟⎠ (2)
+Following the design of the RBS gate, an architecture of a
+parametrized quantum circuit is used as the basis approach of
+a quantum orthogonal layer of a neural network as presented
+in [9]. This is then the inspiration for our hybrid architecture.
+By utilizing the design of this customized gate and pyrami-
+dal structure, we addressed the most difﬁcult challenge in
+mitigating the concept of an orthogonal neural network. An
+important property to note is that the number of parameters
+of the quantum pyramidal circuit corresponding to a neural
+network layer of size n×d is given by (2n−1−d)d/2. This
+matches the number of degrees of freedom of an orthogonal
+matrix of dimension n×d.
+Before applying a quantum pyramidal circuit, it is necessary
+to encode classical data into a quantum state. A single qubit
+represents each feature of the data. We use a unary amplitude
+encoding method for this purpose. Given an input sample with
+features x =( x0,...,x n−1) ∈ Rn, where ∥x∥2 =1 , this
+2025 IEEE International Conference on Communications; Selected Areas in Communications: Quantum Communications and 
+Information Technology
+2395
+Authorized licensed use limited to: UNIVERSIDADE DE SAO PAULO. Downloaded on August 02,2026 at 03:27:45 UTC from IEEE Xplore.  Restrictions apply. 
+===== PAGE 3 =====
+Vector
+Loader Pyramid Layer
+x
+Flatten layer Dense layer loader layer q-orthogonal layer
+Input
+Dense layer
+Sigmoid
+Fig. 4: Architecture of the hybrid model
+sample can be expressed as a superposition of unary states:
+|x⟩ = x0|10...0⟩ +x1|010...0⟩ +... +xn−1|0...01⟩ (3)
+Alternatively, this state can be rewritten as:
+|x⟩ =
+n−1∑
+i=0
+xi|ei⟩ (4)
+where |ei⟩ represents the i-th unary state, with a |1⟩ in the
+i-th position, i.e., |0...010 ...0⟩ .
+Many prior studies have introduced diverse structures for
+data loaders [12]. For instance, the work in [13] presents a
+parallel approach for loading d-dimensional data, employing
+d qubits, d−1 RBS gates, and circuits with a depth of logd.
+Meanwhile, [9] proposes a data loader with a logarithmic
+depth, aiming to load similar states. In our study, we opted
+for the simplest data loader architecture, as it is particularly
+compatible with the pyramidal circuit structure. Given a small
+number of qubits, the depth difference among different loader
+designs becomes negligible. This choice implements a linear-
+depth cascade of n−1 RBS gates, which, due to the pyramidal
+design of our quantum circuit, only adds two more steps.
+Figure 2(b) depicts the concept of this data loader using
+six qubits in our system. Building from these fundamental
+components, we design a classical-quantum hybrid model,
+illustrated in Figure 4.
+B. Dynamic quantum circuit dropout mechanism
+We propose a new quantum dropout mechanism, termed
+Q-Drop. This technique provides a promising approach to
+managing the complexity of quantum circuits during hybrid
+quantum-classical training. Inspired by classical dropout meth-
+ods ﬁrst introduced in [14], Q-Drop aims to mitigate over-
+ﬁtting by randomly deactivating a subset of straight RBS gates
+(connected to one wire) in some wires during both the forward
+and backward phases of training. This strategy discounts the
+transforms used in some qubits and helps the model achieve
+a balance between generalization and the preservation of
+critical information ﬂow. In particular, by dropping certain
+RBS gates associated with speciﬁc qubits, we can identify
+the least impactful qubits in the training process. This en-
+courages the model to explore a broader range of parameter
+combinations, ultimately leading to improved convergence.
+Furthermore, given the limited number of qubits available in
+current quantum computers, which are often subject to high
+Algorithm 1: Dynamic Q-Drop Technique Algorithm
+Input: p: dropout prob., N : total qubits, θ: trainable
+params, Dtr: training data, Vd: dropped wires’
+indices, ∇: dropped gate prob.
+Variable: Vm: mask vector, F: dropout ﬂag, r:
+random number
+1 Initialize: Vm ← 0, F← False ;
+2 for ii nV d do
+3 Ngd ← (N −i−1)·∇ ; // #Dropped gates
+4 Vm ← 1 at indices of Ngd gates on wire index i;
+5 end
+6 for each training epoch do
+7 θold ← θcur; r ← random(0, 1);
+8 F← (r<p );
+9 Forward: d(t) ⊂Dtr; Apply mask Vm to θ; Parse
+d(t);
+10 Backward: G(t) ← gradient loss; θnew ←
+update(G(t), θcur);
+11 if F then
+12 θ← θnew ﬁltered with Vm; // dropout
+13 F← False;
+14 else
+15 θ← θnew;
+16 end
+17 end
+Output: Converged parameter θ
+error rates and other operational constraints, Q-Drop offers a
+way to enhance the reliability of quantum computations.
+However, the main challenge is ﬁnding the right balance
+between active and deactivated qubits: too much dropout can
+slow down learning, while too little might not deliver effective
+regularization. To address this, we applied dropout in the ﬁrst
+wire of the pyramidal quantum circuit in our experiments,
+which takes one-third of the total RBS gates, keeping only
+a subset of gates active in that wire and making the quan-
+tum system more reliable. This method not only retains the
+orthogonality of the model but also makes it more adaptable,
+leading to better results in quantum machine learning. Lines
+1-9 of Algorithm 1 demonstrate the initialization before the
+training process, while lines 5-18 enlist the training loop of the
+dynamic Q-Drop implementation steps. The dropout mask is
+created based on the number of gates ignored in each dropped
+wire, a certain number of RBS gates will be dropped following
+the formula| Vd|(|Vd|−1)∇/2, where |Vd| is the number of
+dropped qubits, ∇ is the dropped gates ratio in a wire. The
+indexes corresponding to any gates connected to the wire with
+the same number of RBS gates will be masked with value 1.
+During the training loop, the forward part remains the same
+with the masked trainable parameters while the backward part
+contains some operations for the dropout mechanism.
+C. Statistic Pruning Algorithm
+Drawing from established practices of selective parameter
+freezing in neural networks [15], [16], we propose a gradient-
+2025 IEEE International Conference on Communications; Selected Areas in Communications: Quantum Communications and 
+Information Technology
+2396
+Authorized licensed use limited to: UNIVERSIDADE DE SAO PAULO. Downloaded on August 02,2026 at 03:27:45 UTC from IEEE Xplore.  Restrictions apply. 
+===== PAGE 4 =====
+based pruning approach for quantum learning networks. Our
+method, inspired by [17], leverages accumulated gradients
+to identify and preserve critical updates during the quantum
+circuit’s learning process. The approach is based on the obser-
+vation that gradient magnitude patterns tend to be persistent:
+parameters with consistently signiﬁcant gradients typically re-
+main important, while those with consistently small gradients
+tend to stay negligible. This predictability makes gradient
+accumulation an effective metric for parameter importance.
+However, as training approaches optimum, the decreased
+standard deviation of accumulated gradient magnitudes can
+make parameter pruning potentially disruptive. We address
+this through an adaptive scheduler that dynamically adjusts
+the pruning ratio based on training progress.
+The naive algorithm described in Algorithm 2 differs from
+the computer vision dropout technique, as it only skips the
+backward updates, leaving the forward path intact. The algo-
+rithm implements this strategy through two main components.
+The ﬁrst component (lines 2-11) handles the control mech-
+anism, which manages the pruning ﬂag and window-based
+scheduling. The pruning ﬂag alternates between accumulation
+and pruning phases based on predeﬁned window sizes (W a,
+Wp). During execution, the parameter θis updated as usual,
+and gradients are accumulated. In contrast, the pruning phase
+rescales the normalization of the accumulated gradients and se-
+lectively prunes based on statistical sampling. The pruning step
+begins by normalizing the accumulated gradients, computing
+logits for categorical sampling, and selecting parameter indices
+to prune based on the prune ratio. A mask is created to retain
+only the selected gradients, which are then applied to quantum
+weights, while other gradients update the remaining variables.
+The accumulated gradients are reset for the next window.
+At each window transition, the algorithm resets accumulated
+states and adjusts the pruning rate using an exponential decay
+formula, ensuring a gradual reduction in pruning intensity.
+rt+1 =m i n (rt ·e0.1, 1.0) (5)
+where rt represents the pruning rate at window t, and the
+factor e0.1 controls the decay speed. The min function ensures
+the pruning rate never exceeds 1.0. This adaptive approach
+gradually reduces the aggressiveness of pruning as training
+progresses, allowing for ﬁner parameter optimization in later
+stages. The second component (lines 12-24) executes the core
+pruning operations. During the accumulation phase, the algo-
+rithm collects gradients normally while updating parameters.
+In the pruning phase, it normalizes the accumulated gradients
+to [0,1], generates a pruning mask based on the current pruning
+rate, and selectively updates parameters using the masked
+gradients. The pruning ﬂag toggles after a set number of steps
+(window size) and the pruning rate is adjusted based on a
+speciﬁed formula while resetting all states. During execution,
+the parameter θis updated as usual, and gradients are accumu-
+lated. This two-phase approach ensures balanced optimization
+between parameter reduction and model performance.
+Algorithm 2: Statistical pruning with Scheduler
+Input: Wa: accum. window size, Wp: pruning
+window size, r: pruning rate, Dtr: training data
+Variable: Ca: accum. step count, Cp: pruning step
+count, F : accum. ﬂag, Vacc: accum. gradients
+1 Initialize: F ← True, Vacc ← 0 ; // Init- zeros
+2 for all data in Dtr do
+3 t ← current train step; d(t) ← subset data D;
+4 Flag switch phase:
+5 if Ca =0 then
+6 F ← False; Ca ← Wa;
+7 end
+8 else
+9 F ← True; Cp ← Wp;
+10 Vacc ← 0 ; // reset new phase
+11 r ← min(r(e0.1, 1.0)) ; // reduce r
+12 end
+13 Execution phase:
+14 if F is True then
+15 Cp ← Cp −1 ; // Accumulation step
+16 Vacc ← Vacc +G(t);
+17 θ← update parameter with G(t);
+18 end
+19 else
+20 Cp ← Cp −1 ; // Pruning step
+21 Normalize Vacc to [0, 1];
+22 Generate pruning mask with r;
+23 Gm(t) ← masked G(t);
+24 θ← update parameter with Gm(t);
+25 end
+26 end
+Output: Converged parameter θ
+III. E XPERIMENT RESULTS AND DISCUSSION
+A. Experimental Setup
+The experiment includes four distinct datasets tailored for
+binary classiﬁcation tasks. These include: (1) MNIST [18] is
+used for two binary classiﬁcation tasks: one target to classify
+digits ’3’ from ’6’ and another targeting digits ’0’ and ’1’ ; (2)
+Fashion-MNIST [19] is utilized for two binary classiﬁcation
+tasks: one aims to distinguish dresses from shirts (class 0 and
+class 3), while the other differentiates class shirts from class
+trousers (class 0 and class 1); (3) Pneumonia-MNIST [20]
+which consists of pediatric chest X-ray images, and (4) Retina-
+MNIST derived from the DeepDRiD [21] dataset, aimed at
+identifying varying levels of retinopathy against normal retinal
+images. Speciﬁcally, Retina-MNIST was adapted for a binary
+classiﬁcation task, segregating normal retinal images (class
+0) from images depicting different severities of retinopathy
+(classes 1 to 4). For the MNIST (3 and 6) and Fashion-MNIST
+2-class (shirts and dresses) datasets, our training set comprised
+the initial 500 images, while the validation set was formed
+by randomly selecting 300 images. All input images were
+initially 28 × 28 pixels in size. We processed these images
+2025 IEEE International Conference on Communications; Selected Areas in Communications: Quantum Communications and 
+Information Technology
+2397
+Authorized licensed use limited to: UNIVERSIDADE DE SAO PAULO. Downloaded on August 02,2026 at 03:27:45 UTC from IEEE Xplore.  Restrictions apply. 
+===== PAGE 5 =====
+by ﬁrst center-cropping to 24× 24 pixels, then downsampling
+to a resolution of 4 × 4 pixels for analysis. Our training
+set consisted of 12,665 and 12,000 images for the MNIST
+(0 and 1) and Fashion-MNIST 2-class (shirts and trousers)
+or Fashion-MNIST (0 and 1) datasets, respectively. The test
+sets contained 2,115 images for MNIST and 2,000 images for
+Fashion-MNIST.
+In the case of Pneumonia-MNIST, the training dataset
+included 4708 images, with 1214 representing class 0 and
+3494 representing class 1. The test set contained 624 images,
+split between 234 for class 0 and 390 for class 1. For Retina-
+MNIST, the training set featured 1080 images (486 for class
+0 and 594 for the combined courses of 1 to 4), while the
+test set included 400 images (174 for class 0 and 226 for
+classes 1 to 4 combined). Given the relatively small size
+of the MedMNIST images (784 pixels) and considering the
+limitations of current quantum computing capabilities, we
+employed Principal Component Analysis (PCA) for dimen-
+sionality reduction, condensing images down to 6 dimensions.
+This preprocessing step was crucial for enabling the analysis
+of medical images on quantum computing platforms, setting
+the stage for our experimental evaluation.
+The proposed method was evaluated sequentially across
+each dataset. The evaluation was divided into two major com-
+ponents: quantum statistic pruning (SP) using backpropagation
+and dynamic dropout. The ﬁrst setup explores the impact of
+quantum statistic pruning on quantum network training tested
+on the mentioned datasets. Similarly, the dynamic dropout
+experiment applies dynamic dropout to quantum orthogonal
+networks. All experiments were implemented using the Pen-
+nylane framework, and models were trained on GPUs.
+B. Experimental Results
+The results delineated in Table I underscore the efﬁcacy of
+our proposed quantum computing techniques across a range of
+datasets, namely MNIST, FashionMNIST, PneumoniaMNIST,
+and RetinaMNIST. Our introduction of learning optimiza-
+tion methodologies, including quantum dropout and statisti-
+cal pruning, has resulted in notable accuracy enhancements
+across all evaluated datasets compared to other state-of-the-
+art quantum methods. Speciﬁcally, within the domains of
+standard image classiﬁcation tasks represented by the MNIST
+and FashionMNIST datasets, our proposed statistical pruning
+has culminated in an accuracy enhancement over two other
+methods, Parameter Shift Rule [17] and Quantum CNN [22].
+In addition to the above the analysis aims to show the per-
+formance comparisons between various training techniques–
+Baseline, Dropout, and Pruning–using three distinct datasets:
+RetinaMNIST (illustrated in the top graph of Figure 5(a)),
+FashionMNIST (depicted in the middle graph of Figure 5(b)),
+and MNIST (the last graph of Figure 5(c)). Figure 5(c) shows
+that the model trained with our method exhibits a faster
+convergence rate and the validation accuracy stabilizes at
+a higher level, indicating better generalization in traditional
+datasets. Speciﬁcally, as shown in Figure 5(a) and 5(b),
+our pruning method yielded a steady training process and
+(a) V alidation accuracy and AUC of RetinaMNIST
+(b) V alidation accuracy and AUC of FashionMNIST with labels (0 and 1)
+(c) V alidation accuracy and AUC of MNIST with labels (3 and 6)
+Fig. 5: Accuracy and AUC in three datasets training compared
+with dynamic dropout and statistic pruning techniques.
+achieved higher accuracy than the original model. In contrast,
+the dropout algorithm exhibited poor performance on the
+RetinaMNIST dataset, characterized by a ﬂuctuating accuracy
+curve. However, in the context of fashion image classiﬁcation
+tasks, exempliﬁed by the FashionMNIST dataset, our pro-
+posed dynamic dropout has facilitated an increase in accuracy
+over the benchmark model QONN [9] as demonstrated in
+Figure 5(b). Otherwise, both two techniques exhibit strong
+performance on MNIST in Figure 5(c). This improvement is a
+direct result of the enhanced training provided by the proposed
+approach, which boosts the model’s effectiveness. This im-
+provement is signiﬁcant, considering the inherent complexities
+and the high degree of variability characteristic of medical
+image data. These performance improvements align with our
+theoretical predictions, showing that our quantum optimization
+strategies, statistical pruning, and dynamic dropout enhance
+model performance.
+2025 IEEE International Conference on Communications; Selected Areas in Communications: Quantum Communications and 
+Information Technology
+2398
+Authorized licensed use limited to: UNIVERSIDADE DE SAO PAULO. Downloaded on August 02,2026 at 03:27:45 UTC from IEEE Xplore.  Restrictions apply. 
+===== PAGE 6 =====
+TABLE I: Comparison with initial benchmark Quantum Methods
+Method PneumoniaMNIST RetinaMNIST MNIST FashionMNIST MNIST(0 & 1) FashionMNIST(0 & 1)
+Acc AUC Acc AUC Acc Acc Acc Acc
+qOrthoNN [9] 80.0% 90.0% 71.0% 74.0% - -- -
+Parameter Shift Rule [17] - - - - 86.0% 89.0% - -
+qCNN [22] - - - - - - 98.0% 87.3%
+qOrthoNN + DD 85.7% 91.3% 71.7% 76.7% 93.0% 90.5% 98.7% 92.2%
+qOrthoNN + SP 94.3% 85.7% 62.5% 62.5% 94.4% 89.2% 93.7% 91.7%
+Note: Acc denotes Accuracy, and AUC denotes the Area Under the ROC Curve. ”-” indicates that the method can not be run since the quantum
+hardware was outdated and closed by IBM. The consequences are the highest values in hypothesis Testing after 10 times with a reliability of 90%.
+C. Discussion on the weaknesses and calibration
+Our new techniques, while offering more control and po-
+tentially better performance through additional hyperparame-
+ters, also introduce training complexities. Excessive pruning
+or dropping gates can degrade performance, especially in
+later training stages. To address this, we must carefully ﬁne-
+tune these parameters, reducing their inﬂuence as training
+progresses, resembling a learning rate schedule. Our exper-
+iments with the quantum dropout method reveal signiﬁcant
+accuracy improvements in image classiﬁcation tasks, provided
+the dropout gates remain below 15% of the total. For the
+statistical pruning technique, we observed an effective range
+between 30% and 70% of the accumulated gradients being
+selectively updated, depending on the speciﬁc dataset. This
+selective gradient update strategy allows the model to focus on
+the most important parameters while reducing the pruning rate
+as training progresses, leading to better overall performance.
+IV . CONCLUSION
+In this study, we introduced two novel techniques to en-
+hance quantum orthogonal networks: quantum statistic prun-
+ing and dynamic dropout. Our experimental results across
+four datasets: MNIST, FashionMNIST, PneumoniaMNIST,
+and RetinaMNIST showed signiﬁcant improvements in ac-
+curacy and robustness. Speciﬁcally, the statistical pruning
+technique accelerates training convergence while maintaining
+model stability, whereas dynamic dropout effectively reduces
+overﬁtting by selectively deactivating qubits. These ﬁndings
+underscore the potential of optimization methodologies for
+quantum machine learning-driven functions. This work con-
+tributes to the evolving ﬁeld of quantum machine learning
+optimization, enhancing the stability and application ability of
+quantum-driven systems.
+REFERENCES
+[1] R. P . Feynman, “Simulating physics with computers,” Reviews of Mod-
+ern Physics, vol. 54, no. 2, pp. 471–487, 1982.
+[2] K. R. Brown, J. Kim, and C. Monroe, “Co-designing a scalable quantum
+computer with trapped atomic ions,” npj Quantum Information, vol. 2,
+p. 16034, 2016.
+[3] V . Scarani, H. Bechmann-Pasquinucci, N. J. Cerf, M. Dusek, N. Lutken-
+haus, and M. Peev, “The security of practical quantum key distribution,”
+Reviews of Modern Physics, vol. 81, no. 3, pp. 1301–1350, 2009.
+[4] F. Tacchino, S. Mangini, P . K. Barkoutsos, C. Macchiavello, D. Gerace,
+I. Tavernelli, and D. Bajoni, “V ariational learning for quantum artiﬁcial
+neural networks,” IEEE Transactions on Quantum Engineering , vol. 2,
+pp. 1–10, 2021.
+[5] M. A. Nielsen and I. L. Chuang, Quantum Computation and Quantum
+Information, 10th ed. Cambridge University Press, 2010.
+[6] M. Schuld, I. Sinayskiy, and F. Petruccione, “An introduction to quantum
+machine learning,” Contemporary Physics, vol. 56, no. 2, pp. 172–185,
+2017.
+[7] J. Biamonte, P . Wittek, N. Pancotti, P . Rebentrost, N. Wiebe, and
+S. Lloyd, “Quantum machine learning,” Nature, vol. 549, no. 7671, pp.
+195–202, 2017.
+[8] M. Schuld and F. Petruccione, Quantum Models as Kernel Methods .
+Cham: Springer International Publishing, 2021, pp. 217–245. [Online].
+Available: https://doi.org/10.1007/978-3-030-83098-4 6
+[9] J. Landman, N. Mathur, Y . Y . Li, M. Strahm, S. Kazdaghli, A. Prakash,
+and I. Kerenidis, “Quantum methods for neural networks and application
+to medical image classiﬁcation,” Quantum, vol. 6, p. 881, Dec. 2022.
+[Online]. Available: http://dx.doi.org/10.22331/q-2022-12-22-881
+[10] M. Kobayashi, K. Nakaji, and N. Y amamoto, “Overﬁtting in quantum
+machine learning and entangling dropout,” Quantum Machine Intelli-
+gence, vol. 4, 11 2022.
+[11] K. Jia, S. Li, Y . Wen, T. Liu, and D. Tao, “Orthogonal deep neural
+networks,” 2019. [Online]. Available: https://arxiv.org/abs/1905.05929
+[12] S.-R. Wu, C.-T. Li, and H.-C. Cheng, “Efﬁcient data loading with
+quantum autoencoder,” in ICASSP 2023 - 2023 IEEE International
+Conference on Acoustics, Speech and Signal Processing (ICASSP) , 2023,
+pp. 1–5.
+[13] S. Johri, S. Debnath, A. Mocherla, A. Singh, A. Prakash, J. Kim, and
+I. Kerenidis, “Nearest centroid classiﬁcation on a trapped ion quantum
+computer,” 2020. [Online]. Available: https://arxiv.org/abs/2012.04145
+[14] N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, and
+R. Salakhutdinov, “Dropout: A simple way to prevent neural
+networks from overﬁtting,” Journal of Machine Learning Research,
+vol. 15, no. 56, pp. 1929–1958, 2014. [Online]. Available:
+http://jmlr.org/papers/v15/srivastava14a.html
+[15] P . Wimmer, J. Mehnert, and A. Condurache, “Dimensionality reduced
+training by pruning and freezing parts of a deep neural network: a
+survey,” Artiﬁcial Intelligence Review, vol. 56, pp. 14 257 – 14 295,
+2022.
+[16] A. Brock, T. Lim, J. Ritchie, and N. Weston, “Freezeout: Accelerate
+training by progressively freezing layers,” ArXiv, vol. abs/1706.04983,
+2017.
+[17] J. Li, X. Wang, Z. Zhang, and L. Liu, “Quantum on-chip training
+with parameter shift and gradient pruning,” in Proceedings of the 39th
+International Conference on Machine Learning (ICML), 2022.
+[18] Y . Lecun, L. Bottou, Y . Bengio, and P . Haffner, “Gradient-based learning
+applied to document recognition,” Proceedings of the IEEE, vol. 86,
+no. 11, pp. 2278–2324, 1998.
+[19] H. Xiao, K. Rasul, and R. V ollgraf, “Fashion-mnist: a novel image
+dataset for benchmarking machine learning algorithms,” 08 2017.
+[20] D. Kermany, M. Goldbaum, W. Cai, C. V alentim, H.-Y . Liang, S. Baxter,
+A. McKeown, G. Y ang, X. Wu, F. Y an, J. Dong, M. Prasadha, J. Pei,
+M. Ting, J. Zhu, C. Li, S. Willens, J. Dong, I. Ziyar, and K. Zhang,
+“Identifying medical diagnoses and treatable diseases by image-based
+deep learning,” Cell, vol. 172, pp. 1122–1131.e9, 02 2018.
+[21] Liu et al., “Deepdrid: Diabetic retinopathygrading and image quality
+estimation challenge,” Patterns, vol. 3, p. 100512, 05 2022.
+[22] T. Hur, L. Kim, and D. Park, “Quantum convolutional neural network
+for classical data classiﬁcation,” Quantum Machine Intelligence, vol. 4,
+06 2022.
+2025 IEEE International Conference on Communications; Selected Areas in Communications: Quantum Communications and 
+Information Technology
+2399
+Authorized licensed use limited to: UNIVERSIDADE DE SAO PAULO. Downloaded on August 02,2026 at 03:27:45 UTC from IEEE Xplore.  Restrictions apply. 

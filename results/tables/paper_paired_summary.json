@@ -1,0 +1,28 @@
+{
+  "entangling_pqc": {
+    "n_pairs": 12,
+    "mean_d_auroc_src": -0.01947740959277323,
+    "std_d_auroc_src": 0.03018338736259473,
+    "mean_d_ece_src": 0.047125518020569836,
+    "std_d_ece_src": 0.08673259295935443,
+    "mean_d_auroc_tgt": -0.03589610553976875,
+    "std_d_auroc_tgt": 0.048128990673163945,
+    "mean_d_ece_tgt": -0.05782765625138455,
+    "std_d_ece_tgt": 0.07712459358885472,
+    "n_auroc_src_worse": 10,
+    "n_ece_src_better": 3
+  },
+  "product_pqc": {
+    "n_pairs": 12,
+    "mean_d_auroc_src": -0.01995657107568054,
+    "std_d_auroc_src": 0.03385729444750848,
+    "mean_d_ece_src": -0.03411828582909069,
+    "std_d_ece_src": 0.0835072337449582,
+    "mean_d_auroc_tgt": -0.015028970676748743,
+    "std_d_auroc_tgt": 0.041579308702928613,
+    "mean_d_ece_tgt": -0.052911824942109185,
+    "std_d_ece_tgt": 0.08224321001781625,
+    "n_auroc_src_worse": 9,
+    "n_ece_src_better": 8
+  }
+}

@@ -1,0 +1,41 @@
+Quyen
+a de-identified publicly available database of chest radiographs with free-text reports.
+Scientific Data, 6:317, 2019.
+Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. Inter-
+national Conference on Learning Representations, 2015.
+Jarrod R. McClean, Sergio Boixo, Vadim N. Smelyanskiy, Ryan Babbush, and Hartmut
+Neven. Barren plateaus in quantum neural network training landscapes. Nature Com-
+munications, 9:4812, 2018.
+K. Mitarai, M. Negoro, M. Kitagawa, and K. Fujii. Quantum circuit learning. Physical
+Review A, 98(3):032309, 2018.
+Mahdi Pakdaman Naeini, Gregory F. Cooper, and Milos Hauskrecht. Obtaining Well Cali-
+brated Probabilities Using Bayesian Binning. In Proceedings of the Twenty-Ninth AAAI
+Conference on Artificial Intelligence, pages 2901–2907, 2015.
+Ha Q. Nguyen, Khanh Lam, Linh T. Le, Hieu H. Pham, Dat Q. Tran, Dung B. Nguyen,
+Dung D. Le, Chi M. Pham, Hang T. T. Tong, Diep H. Dinh, et al. VinDr-CXR: An open
+dataset of chest X-rays with radiologist’s annotations. Scientific Data, 9(1):429, 2022.
+Jeremy Nixon, Michael W. Dusenberry, Linchuan Zhang, Ghassen Jerfel, and Dustin Tran.
+Measuring Calibration in Deep Learning. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition Workshops, 2019.
+Luke Oakden-Rayner, Jared Dunnmon, Gustavo Carneiro, and Christopher R´e. Hidden
+stratification causes clinically meaningful failures in machine learning for medical imaging.
+Proceedings of the ACM Conference on Health, Inference, and Learning, pages 151–159,
+2020.
+Yaniv Ovadia, Emily Fertig, Jie Ren, Zachary Nado, D. Sculley, Sebastian Nowozin,
+Joshua V. Dillon, Balaji Lakshminarayanan, and Jasper Snoek. Can You Trust Your
+Model’s Uncertainty? Evaluating Predictive Uncertainty Under Dataset Shift. In Ad-
+vances in Neural Information Processing Systems, volume 32, 2019.
+Eduardo H. P. Pooch, Pedro Ballester, and Rodrigo C. Barros. Can we trust deep learning
+models diagnosis?
+The impact of domain shift in chest radiograph classification.
+In
+Predictive Intelligence in Medicine (PRIME), MICCAI Workshop, pages 74–83. Springer,
+2020.
+Pranav Rajpurkar, Jeremy Irvin, Kaylie Zhu, Brandon Yang, Hershel Mehta, Tony Duan,
+Daisy Ding, Aarti Bagul, Curtis Langlotz, Katie Shpanskaya, Matthew P. Lungren, and
+Andrew Y. Ng. CheXNet: Radiologist-Level Pneumonia Detection on Chest X-Rays with
+Deep Learning. arXiv preprint arXiv:1711.05225, 2017.
+Maria Schuld, Ryan Sweke, and Johannes Jakob Meyer. Effect of data encoding on the
+expressive power of variational quantum-machine-learning models. Physical Review A,
+103(3):032430, 2021.
+12
