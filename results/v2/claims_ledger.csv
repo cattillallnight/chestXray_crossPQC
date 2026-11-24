@@ -1,0 +1,4 @@
+file,git,producer,generated
+csv\stage1_long.csv,37e3a7d,run_all.py,2026-11-24 20:54:10
+figures\F1_ece_vs_prevalence.pdf,37e3a7d,run_all.py,2026-11-24 20:54:10
+figures\F2_recalibration_ladder.pdf,37e3a7d,run_all.py,2026-11-24 20:54:10
