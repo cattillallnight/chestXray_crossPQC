@@ -86,18 +86,38 @@ def stage1(budget_ok=True) -> dict:
     write_csv(CSV / "stage1_long.csv", rows)
     log(f"Stage 1 wrote {len(rows)} rows to csv/stage1_long.csv")
 
-    # figures F1, F2
-    from qcv2.figures import fig_F1_prev_sweep, fig_F2_recal_ladder
+    # figures F1-F4 + reliability
+    from qcv2.figures import fig_F1_prev_sweep, fig_F2_recal_ladder, fig_reliability
+    from qcv2.figs_from_csv import build_F3, build_F4
     try:
         fig_F1_prev_sweep(rows)
         fig_F2_recal_ladder(rows)
         log("Stage 1 figures F1, F2 written")
     except Exception as exc:  # noqa: BLE001
         warn(f"Stage 1 figure failed: {exc}", "figure_failure")
+    write_csv(CSV / "stage1_long.csv", rows)
+    try:
+        n3 = build_F3(); n4 = build_F4()
+        log(f"figures F3 ({n3} pts), F4 ({n4} pts) written")
+    except Exception as exc:  # noqa: BLE001
+        warn(f"F3/F4 figure failed: {exc}", "figure_failure")
+    # reliability diagrams from v1 logits, seed 42, primary tasks
+    try:
+        for task in PRIMARY_TASKS:
+            for head in V1_HEADS:
+                got = D.load_v1_logits(task, head, 42, "chexpert_test")
+                if got is None:
+                    continue
+                z, y, _ = got
+                fig_reliability(task, head, 42, M.sigmoid(z), y)
+        log("reliability diagrams written")
+    except Exception as exc:  # noqa: BLE001
+        warn(f"reliability figure failed: {exc}", "figure_failure")
 
     # ranking-flip counts across prevalence (1.1)
     flips = _ranking_flips(rows)
-    log(f"ranking-flip summary: {flips}")
+    log(f"ranking-flip summary: {flips['n_with_any_flip']}/{flips['n_task_seed']} task-seeds "
+        f"change head order across prevalence (detail in stage1_ranking_flips.json)")
     (V2 / "stage1_ranking_flips.json").write_text(json.dumps(flips, indent=2), encoding="utf-8")
 
     # tables (with/without collapsed not applicable to v1 here)
@@ -186,20 +206,39 @@ def stage2(budget_hours: float | None = None) -> dict:
                 eta = _benchmark_eta(groups)
 
     from qcv2.stage2 import evaluate_run, run_one
-    all_metric_rows = []
     crashes = 0
     bench_store = RunStore("stage2_runs")
-    run_metric_store = RunStore("stage2_metrics")
+    # per-run metric files: crash-safe, resumable, deduped by config hash
+    metric_dir = V2 / "state" / "stage2_metrics"
+    metric_dir.mkdir(parents=True, exist_ok=True)
+
+    def _metric_path(cfg):
+        return metric_dir / f"{cfg_hash(cfg)}.json"
+
+    n_done = 0
     for group, cfgs in groups.items():
         log(f"  group {group}: {len(cfgs)} configs")
         for cfg in cfgs:
             try:
                 out = run_one(cfg, bench_store)
-                if out is None:
-                    continue
-                mrows = evaluate_run(cfg, out["logits"], out["labels"])
-                all_metric_rows += mrows
+                if out is not None:
+                    mrows = evaluate_run(cfg, out["logits"], out["labels"])
+                    _metric_path(cfg).write_text(json.dumps(mrows), encoding="utf-8")
+                elif _metric_path(cfg).exists():
+                    pass  # metrics already saved from a prior run
+                else:
+                    # run done but metrics missing (e.g. crash after mark_done): recompute
+                    logits_path = V2 / "logits_v2" / f"{cfg['stage']}_{cfg['task']}_{cfg['head']}_s{cfg['seed']}_{cfg_hash(cfg)}.npz"
+                    if logits_path.exists():
+                        b = np.load(logits_path, allow_pickle=True)
+                        lg = {k.replace("logits_", ""): b[k] for k in b.files if k.startswith("logits_")}
+                        lb = {k.replace("labels_", ""): b[k] for k in b.files if k.startswith("labels_")}
+                        mrows = evaluate_run(cfg, lg, lb)
+                        _metric_path(cfg).write_text(json.dumps(mrows), encoding="utf-8")
+                n_done += 1
                 crashes = 0
+                if n_done % 20 == 0:
+                    log(f"    {group}: {n_done} runs handled")
             except Halt:
                 raise
             except Exception as exc:  # noqa: BLE001
@@ -208,13 +247,13 @@ def stage2(budget_hours: float | None = None) -> dict:
                      "run_crash")
                 if crashes > 3:
                     raise Halt(f">3 consecutive stage2 crashes; last: {exc}")
-    # write accumulated rows even if resumed (merge with on-disk if present)
-    existing = []
-    if (CSV / "stage2_long.csv").exists():
-        existing = read_csv(CSV / "stage2_long.csv")
-    merged = existing + all_metric_rows
+
+    # assemble the long CSV from all per-run metric files (resume-safe)
+    merged = []
+    for mf in sorted(metric_dir.glob("*.json")):
+        merged.extend(json.loads(mf.read_text(encoding="utf-8")))
     write_csv(CSV / "stage2_long.csv", merged)
-    log(f"Stage 2 metrics: {len(merged)} rows total on disk")
+    log(f"Stage 2 metrics: {len(merged)} rows assembled from {len(list(metric_dir.glob('*.json')))} runs")
 
     # rerun Stage 1-style analyses on new runs (2.8)
     log("Stage 2.8: re-running Stage 1 analyses on v2 runs")

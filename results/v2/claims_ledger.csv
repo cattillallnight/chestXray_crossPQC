@@ -1,4 +1,18 @@
 file,git,producer,generated
-csv\stage1_long.csv,37e3a7d,run_all.py,2026-11-24 20:54:10
-figures\F1_ece_vs_prevalence.pdf,37e3a7d,run_all.py,2026-11-24 20:54:10
-figures\F2_recalibration_ladder.pdf,37e3a7d,run_all.py,2026-11-24 20:54:10
+csv\stage1_long.csv,5197138,run_all.py,2026-11-24 20:57:51
+figures\F1_ece_vs_prevalence.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\F2_recalibration_ladder.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\F3_logit_range_vs_ece.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\F4_decision_curves.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_cardiomegaly_entangling_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_cardiomegaly_mlp_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_cardiomegaly_product_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_consolidation_entangling_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_consolidation_mlp_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_consolidation_product_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_no_finding_entangling_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_no_finding_mlp_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_no_finding_product_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_pleural_effusion_entangling_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_pleural_effusion_mlp_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
+figures\rel_pleural_effusion_product_pqc_s42.pdf,5197138,run_all.py,2026-11-24 20:57:51
