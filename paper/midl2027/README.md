@@ -17,7 +17,7 @@ Upload `paper/QCalibNet_MIDL2027.zip` (rebuilt after the last TeX edit).
 2. Main document: `midl-fullpaper.tex`
 3. Compiler: **pdfLaTeX** (not XeLaTeX / LuaLaTeX)
 4. Recompile from scratch (pdfLaTeX → BibTeX → pdfLaTeX × 2)
-5. Check **body ≤ 14 pages** (Main Track) before `\clearpage` / acknowledgements / references / appendix. Those sections do not count toward the limit. The current build has a 12-page body (references start on p13 of 19).
+5. Check **body ≤ 10 pages** (Main Track) before `\clearpage` / acknowledgements / references / appendix. Those sections do not count toward the limit. After rebuttal the Main Track camera-ready limit is 12 pages. The 14/16-page limit is the Clinical Translation & Validation special track, not this paper.
 
 Zip contents: `midl-fullpaper.tex`, `midl.cls`, `references.bib`, `latexmkrc`, `orcid.png`, figures, OpenReview text files, `cover_letter.md`. Do not include `template_src/`.
 

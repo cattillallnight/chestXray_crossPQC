@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-ROOT = Path(r"E:\cvchestpj")
+ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 

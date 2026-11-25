@@ -4,16 +4,15 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+.pytest_cache/
 
-# Datasets (never commit images or dataset label CSVs)
+# Datasets — never publish images or label CSVs
 CheXpert/
 VinBigData/
-data/features/
-data/splits/
-data/external/
-data/*.csv
+data/
+relatedworkpapers/
 
-# Large binary artefacts
+# Trained weights and caches
 *.pt
 *.pth
 *.npy
@@ -23,19 +22,29 @@ results/v2/logits_v1_ext/
 results/v2/logits_v2/
 results/v2/state/
 
-# OS / editor
-.DS_Store
-Thumbs.db
-*.swp
+# Run logs, pid files, captured stdout
+results/*.log
+results/*.pid
 
-# LaTeX build products
+# LaTeX build products and submission archives
 *.aux
 *.log
 *.blg
 *.out
+*.fls
+*.fdb_latexmk
 *.synctex.gz
-paper/**/*.pdf
-relatedworkpapers/
 *.zip
-results/v2/logs/
-paper/midl2027/template_src/
+paper/midl2027/_pdf_preview/
+paper/slides/
+*.before_*
+*.bak-*
+
+# Scratch probe scripts and third-party paper extracts
+scripts/_probe*
+paper/_qdrop_extract.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp

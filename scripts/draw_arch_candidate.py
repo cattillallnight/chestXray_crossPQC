@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Circle, Rectangle
 from matplotlib.lines import Line2D
 
-OUT = Path(r"C:\Users\Thuy Quyen\Downloads\QCalibNet_architecture_corrected.png")
+OUT = Path(__file__).resolve().parents[1] / "results" / "figures" / "QCalibNet_architecture_corrected.png"
 
 
 def rbox(ax, x, y, w, h, fc, ec="#2b2b2b", lw=0.85, rad=0.06, z=2):

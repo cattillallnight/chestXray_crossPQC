@@ -1,18 +1,23 @@
-"""Filesystem layout for Q-CalibNet."""
+"""Filesystem layout for Q-CalibNet.
+
+Set ``QCALIBNET_ROOT`` to override the project root, ``QCALIBNET_CHEXPERT_DIR``
+and ``QCALIBNET_VINDR_DIR`` to keep the datasets outside the repository.
+"""
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-ROOT = Path(r"E:\cvchestpj")
+ROOT = Path(os.environ.get("QCALIBNET_ROOT", Path(__file__).resolve().parent.parent))
 
-CHEXPERT_DIR = ROOT / "CheXpert"
+CHEXPERT_DIR = Path(os.environ.get("QCALIBNET_CHEXPERT_DIR", ROOT / "CheXpert"))
 CHEXPERT_TRAIN_CSV = CHEXPERT_DIR / "train.csv"
 CHEXPERT_VALID_CSV = CHEXPERT_DIR / "valid.csv"
 CHEXPERT_TRAIN_DIR = CHEXPERT_DIR / "train"
 CHEXPERT_VALID_DIR = CHEXPERT_DIR / "valid"
 
-VINDR_DIR = ROOT / "VinBigData"
+VINDR_DIR = Path(os.environ.get("QCALIBNET_VINDR_DIR", ROOT / "VinBigData"))
 VINDR_TRAIN_DIR = VINDR_DIR / "train"
 VINDR_TEST_DIR = VINDR_DIR / "test"
 VINDR_META_CSV = VINDR_DIR / "train_meta.csv"

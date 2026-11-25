@@ -21,7 +21,7 @@ from qcalibnet.datasets import (
     vindr_labels_available,
 )
 from qcalibnet.labels import TASKS
-from qcalibnet.paths import SPLITS_DIR, ensure_dirs
+from qcalibnet.paths import SPLITS_DIR, VINDR_DIR, ensure_dirs
 from qcalibnet.seed import seed_everything
 
 
@@ -92,7 +92,7 @@ def main() -> None:
             task_sum["vindr_cohort"] = cohort_summary(vindr)
             task_sum["vindr_external_test"] = cohort_summary(hold["external_test"])
         else:
-            print("VinDr labels missing: skip external splits. Place train.csv at E:\\cvchestpj\\VinBigData\\train.csv")
+            print(f"VinDr labels missing: skip external splits. Place train.csv at {VINDR_DIR / 'train.csv'}")
             task_sum["vindr"] = "missing_labels"
         summary["tasks"][task_name] = task_sum
 

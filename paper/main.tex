@@ -15,17 +15,17 @@
 \hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
 \captionsetup{font=small,labelfont=bf}
 
-\title{What a Six-Qubit Head Can and Cannot Change: Calibration under Cross-Population Chest X-Ray Shift at Matched Capacity}
+\title{Matched-Capacity Hybrid Quantum-Classical Networks for Confidence Calibration under Cross-Population Chest X-Ray Shift}
 \author{Tran Thi Thuy Quyen\\
 Information Assurance, FPT University Can Tho, Vietnam\\
-\texttt{quyentttiace200993@gmail.com}}
+\texttt{alwayshavebeenyaa@gmail.com}}
 \date{}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Hybrid quantum-classical networks are often presented as replacements for convolutional classifiers. That comparison is not well posed when a parameterized quantum circuit (PQC) consumes a handful of engineered scalars while the classical baseline consumes the full image. This paper asks a narrower question that the implementation can answer. On a shared six-dimensional bottleneck taken from a frozen ImageNet DenseNet-121, does a PQC change discrimination or confidence calibration relative to a capacity-matched multilayer perceptron (MLP) when models trained on CheXpert (United States) are evaluated on VinDr-CXR (Vietnam)? Three heads are trained: an MLP, a product PQC without entangling gates, and an entangling PQC with a CNOT ring. All heads map six angle-embedded features to a single logit; the PQC measures $\langle Z\rangle$ on qubit~0. Because the readout is local and the product circuit has no entangling gates, the product head is functionally a one-feature model, which we state explicitly. Forty-five runs (five tasks $\times$ three heads $\times$ three seeds) are reported. On CheXpert test data, PQC heads do not outperform the MLP on AUROC. Entanglement does not systematically reduce expected calibration error (ECE). Temperature scaling fitted on CheXpert validation logits can lower source ECE and raise target ECE on the same run, and on a natural-prevalence target holdout the entangling head can be the worst calibrated. VinDr-CXR has no Pneumonia class; a pneumonia proxy (Consolidation $\cup$ Infiltration) is an ontology shift and is confined to the appendix. At this capacity, on a noiseless simulator, a PQC is not a more trustworthy head under cross-population shift. That empirical boundary is the result.
+Hybrid quantum-classical networks are often presented as replacements for convolutional classifiers. That comparison is not well posed when a parameterized quantum circuit (PQC) consumes a handful of engineered scalars while the classical baseline consumes the full image. This paper asks a narrower question that the implementation can answer. On a shared six-dimensional bottleneck taken from a frozen ImageNet DenseNet-121, does a PQC change discrimination or confidence calibration relative to a capacity-matched multilayer perceptron (MLP) when models trained on CheXpert (United States) are evaluated on VinDr-CXR (Vietnam)? Three heads are trained: an MLP, a product PQC without entangling gates, and an entangling PQC with a CNOT ring. All heads map six angle-embedded features to a single logit; the PQC measures $\langle Z\rangle$ on qubit~0. Forty-five runs (five tasks $\times$ three heads $\times$ three seeds) are reported. On CheXpert test data, PQC heads do not outperform the MLP on AUROC. Entanglement does not systematically reduce expected calibration error (ECE). Temperature scaling fitted on CheXpert validation logits can lower source ECE and raise target ECE on the same run. VinDr-CXR has no Pneumonia class; a pneumonia proxy (Consolidation $\cup$ Infiltration) is an ontology shift and is confined to the appendix. At this capacity, on a noiseless simulator, a PQC is not a more trustworthy head under cross-population shift. That empirical boundary is the result.
 \end{abstract}
 
 \noindent\textbf{Keywords:} confidence calibration; domain shift; chest radiography; parameterized quantum circuit; matched capacity
@@ -34,9 +34,7 @@ Hybrid quantum-classical networks are often presented as replacements for convol
 
 A chest-radiograph classifier that looks well calibrated in one hospital can become over- or under-confident in another~\citep{ovadia2019shift,zech2018variable}. Calibration under shift is therefore a clinical property, not a training curiosity. In parallel, variational quantum circuits have been attached to classical backbones and described as hybrid quantum-classical networks~\citep{benedetti2019pqc,cerezo2021vqa}. Many of those studies compare a small PQC with a fully trained convolutional classifier, or they collapse label ontologies across datasets in order to claim a cross-site pneumonia detector. Both moves inflate the apparent role of the circuit.
 
-The model studied here is deliberately smaller than that rhetoric. A DenseNet-121~\citep{huang2017densenet} pretrained on ImageNet~\citep{deng2009imagenet} is frozen and used only as a 1024-dimensional feature extractor. A linear map compresses those features to six $\tanh$-scaled angles. Three heads of nearly equal \emph{nominal} parameter count then produce a binary logit: a two-layer MLP (6\,215 trainable parameters, including the bottleneck), a product PQC, and an entangling PQC (6\,188 parameters each).
-
-One caveat matters for how the results are read. With a single-qubit readout $\langle Z_0\rangle$ and no entangling gates, the product circuit is functionally a \emph{one-feature} model: only $z_0$ reaches the measured wire, and $z_{1..5}$ have exactly zero influence on the logit. The product-versus-entangling contrast therefore changes two factors at once---entanglement and input routing---and nominal parameter parity does not imply functional parity. The clean classical-versus-quantum comparison, where both heads consume all six features, is MLP versus entangling PQC. The research questions follow the code.
+The model studied here, Q-CalibNet, is deliberately smaller than that rhetoric. A DenseNet-121~\citep{huang2017densenet} pretrained on ImageNet~\citep{deng2009imagenet} is frozen and used only as a 1024-dimensional feature extractor. A linear map compresses those features to six $\tanh$-scaled angles. Three heads of nearly equal parameter count then produce a binary logit: a two-layer MLP (6\,215 trainable parameters, including the bottleneck), a product PQC, and an entangling PQC (6\,188 parameters each). The research questions follow the code.
 
 \begin{itemize}
 \item \textbf{RQ1 (secondary).} On the same six-dimensional bottleneck, do product or entangling PQCs differ from the MLP in AUROC, AUPRC, or F1 when models trained on CheXpert are evaluated on VinDr-CXR?
@@ -156,7 +154,7 @@ Pneumonia proxy & 12 & 0.024 & 500 & 0.500 & 55 & 0.055 \\
 \begin{table}[h]
 \centering
 \scriptsize
-\caption{Mean$\pm$std over seeds $\{42,43,44\}$. ECE is 15-bin. $n$ $T$-deg counts runs that hit the L-BFGS clamp. The product head is a one-feature model (see Section~1).}
+\caption{Mean$\pm$std over seeds $\{42,43,44\}$. ECE is 15-bin. $n$ $T$-deg counts runs that hit the L-BFGS clamp.}
 \begin{tabular}{llccccc}
 \toprule
 Task & Head & AUROC CheX. & ECE raw$\to$cal CheX. & AUROC VinDr-bal & ECE raw$\to$cal VinDr & $n$ $T$-deg \\
@@ -198,21 +196,21 @@ Entangling & $0.711\pm0.032$ & $0.438\to0.437$ & $0.609\pm0.025$ & $0.087\to0.08
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{../results/figures/fig_main_results.pdf}
+\includegraphics[width=\textwidth]{../results/figures/fig_auroc_ece_bars.pdf}
 \caption{Matched-capacity heads on a frozen DenseNet-121 six-dimensional bottleneck. Bars are mean$\pm$std over three seeds. Discrimination is secondary; calibration is primary.}
 \label{fig:bars}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.62\textwidth]{../results/figures/fig_calibration_transfer.pdf}
+\includegraphics[width=0.62\textwidth]{../results/figures/fig_temperature_transfer.pdf}
 \caption{Change in ECE after source-fitted temperature scaling. Points in the lower-left quadrant improve on both domains; points in the upper-left improve on CheXpert and degrade on VinDr-CXR.}
 \label{fig:transfer}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{../results/figures/fig_reliability.pdf}
+\includegraphics[width=\textwidth]{../results/figures/fig_reliability_no_finding_seed42.pdf}
 \caption{Reliability diagrams for no finding, seed 42. Marker area is proportional to bin mass. Entangling PQC over-predicts the positive class on CheXpert test; temperature fitted on CheXpert validation does not restore a diagonal on VinDr-CXR for the product head.}
 \label{fig:reliability}
 \end{figure}
