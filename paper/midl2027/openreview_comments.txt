@@ -1,8 +1,0 @@
-Track: Main Track — full paper (PMLR). Not a short paper. Not a special-issue journal submission.
-
-Corresponding author: Tran Thi Thuy Quyen, quyentttiace200993@gmail.com
-Affiliation: Information Assurance, FPT University Can Tho, Vietnam
-
-This manuscript isolates the inductive bias of a parameterized quantum circuit on a shared six-dimensional bottleneck from a frozen DenseNet-121. It does not propose a new architecture. Product versus entangling circuits differ only by a CNOT ring at matched capacity (6,188 vs 6,215 parameters). Primary findings share a name on CheXpert and VinDr-CXR; pneumonia is appendix-only because VinDr has no Pneumonia class. Forty-five of forty-five runs are reported, including seven degenerate temperature fits. We do not claim quantum advantage, hardware execution, SOTA CXR detection, or clinical deployment.
-
-Keywords: confidence calibration, domain shift, chest radiography, parameterized quantum circuit, matched capacity

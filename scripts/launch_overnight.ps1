@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
-$python = "C:\Users\Thuy Quyen\AppData\Local\Programs\Python\Python310\python.exe"
-$root = "E:\cvchestpj"
+$python = (Get-Command python -ErrorAction Stop).Source
+$root = Split-Path -Parent $PSScriptRoot
 $outLog = Join-Path $root "results\overnight_stdout.log"
 $errLog = Join-Path $root "results\overnight_stderr.log"
 $pidFile = Join-Path $root "results\overnight.pid"

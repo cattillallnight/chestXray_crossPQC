@@ -135,41 +135,6 @@ def write_tables(df: pd.DataFrame) -> pd.DataFrame:
     deg = df[df.T_degenerate][["task", "head", "seed", "temperature", "chexpert_test_raw_ece", "chexpert_test_cal_ece", "vindr_bal_raw_ece", "vindr_bal_cal_ece"]]
     deg.to_csv(TABLES_DIR / "paper_degenerate_temperature.csv", index=False)
 
-    md_lines = [
-        "# Paper tables (generated; do not edit by hand)",
-        "",
-        "Mean±std over seeds {42,43,44}. Discrimination is secondary. "
-        "Temperature scaling is fit on CheXpert validation logits and applied as logits/T. "
-        "A run is T-degenerate if T hit the optimizer clamp (0.001 or 100).",
-        "",
-        "## Primary tasks",
-        "",
-        "| Task | Head | AUROC CheXpert | ECE raw→cal CheXpert | AUROC VinDr-bal | ECE raw→cal VinDr-bal | n T-deg |",
-        "|---|---|---|---|---|---|---|",
-    ]
-    for r in table.itertuples():
-        if r.task == "pneumonia_proxy":
-            continue
-        md_lines.append(
-            f"| {TASK_LABEL[r.task]} | {HEAD_LABEL[r.head]} | {r.chexpert_auroc} | "
-            f"{r.chexpert_ece_raw}→{r.chexpert_ece_cal} | {r.vindr_bal_auroc} | "
-            f"{r.vindr_bal_ece_raw}→{r.vindr_bal_ece_cal} | {r.n_T_degenerate} |"
-        )
-    md_lines += [
-        "",
-        "## Appendix: pneumonia_proxy (ontology shift; not a pneumonia detector)",
-        "",
-        "| Head | AUROC CheXpert | ECE raw→cal CheXpert | AUROC VinDr-bal | ECE raw→cal VinDr-bal | n T-deg |",
-        "|---|---|---|---|---|---|",
-    ]
-    for r in table.itertuples():
-        if r.task != "pneumonia_proxy":
-            continue
-        md_lines.append(
-            f"| {HEAD_LABEL[r.head]} | {r.chexpert_auroc} | {r.chexpert_ece_raw}→{r.chexpert_ece_cal} | "
-            f"{r.vindr_bal_auroc} | {r.vindr_bal_ece_raw}→{r.vindr_bal_ece_cal} | {r.n_T_degenerate} |"
-        )
-    (TABLES_DIR / "paper_tables.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
     print(f"wrote {TABLES_DIR / 'paper_primary_mean_std.csv'}")
     print(f"T-degenerate runs: {int(df.T_degenerate.sum())}")
     return df

@@ -6,7 +6,6 @@ labelled as an upper bound, never as a fair baseline.
 from __future__ import annotations
 
 import json
-import shutil
 import sys
 from pathlib import Path
 
@@ -22,10 +21,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from qcalibnet.metrics import expected_calibration_error, sigmoid
-from qcalibnet.paths import FIGURES_DIR, TABLES_DIR, ensure_dirs
+from qcalibnet.paths import FIGURES_DIR, SPLITS_DIR, TABLES_DIR, ensure_dirs
 
-PAPER_FIG = ROOT / "paper" / "midl2027" / "figures"
-SPLITS = ROOT / "data" / "splits"
+SPLITS = SPLITS_DIR
 
 PRIMARY = ["no_finding", "cardiomegaly", "pleural_effusion", "consolidation"]
 HEADS = ["mlp", "product_pqc", "entangling_pqc"]
@@ -65,13 +63,11 @@ def style():
 
 
 def save(fig, name: str) -> None:
-    PAPER_FIG.mkdir(parents=True, exist_ok=True)
-    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    for folder in (FIGURES_DIR, PAPER_FIG):
-        png = folder / f"{name}.png"
-        pdf = folder / f"{name}.pdf"
-        fig.savefig(png, dpi=300, bbox_inches="tight", facecolor="white")
-        fig.savefig(pdf, bbox_inches="tight", facecolor="white")
+    ensure_dirs()
+    png = FIGURES_DIR / f"{name}.png"
+    pdf = FIGURES_DIR / f"{name}.pdf"
+    fig.savefig(png, dpi=300, bbox_inches="tight", facecolor="white")
+    fig.savefig(pdf, bbox_inches="tight", facecolor="white")
     print(f"wrote {name}")
 
 

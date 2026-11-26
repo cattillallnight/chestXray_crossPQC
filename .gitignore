@@ -6,10 +6,11 @@ __pycache__/
 venv/
 .pytest_cache/
 
-# Datasets — never publish images or label CSVs
+# Private datasets, splits, and feature cache — never publish
 CheXpert/
 VinBigData/
 data/
+MIDLquantumpersional/
 relatedworkpapers/
 
 # Trained weights and caches

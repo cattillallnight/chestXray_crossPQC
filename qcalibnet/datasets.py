@@ -159,10 +159,10 @@ def load_vindr_annotations() -> pd.DataFrame:
     label_csv = resolve_vindr_label_csv()
     if label_csv is None:
         raise FileNotFoundError(
-            "VinDr/VinBigData label CSV not found. Place train.csv at "
-            r"E:\cvchestpj\VinBigData\train.csv "
-            "(Kaggle vinbigdata-chest-xray-abnormalities-detection). "
-            "Required columns: image_id, class_name (and class_id if present)."
+            "VinDr-CXR annotations were not found. Set QCALIBNET_VINDR_DIR to the "
+            "extracted VinDr-CXR directory or place vindr_train.csv under "
+            "QCALIBNET_DATA_DIR/external. Required columns: image_id, class_name "
+            "(and class_id if present)."
         )
     df = pd.read_csv(label_csv)
     required = {"image_id", "class_name"}

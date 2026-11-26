@@ -1,7 +1,7 @@
 """Filesystem layout for Q-CalibNet.
 
-Set ``QCALIBNET_ROOT`` to override the project root, ``QCALIBNET_CHEXPERT_DIR``
-and ``QCALIBNET_VINDR_DIR`` to keep the datasets outside the repository.
+Set ``QCALIBNET_ROOT``, ``QCALIBNET_DATA_DIR``, ``QCALIBNET_CHEXPERT_DIR``,
+and ``QCALIBNET_VINDR_DIR`` to locate project and private data.
 """
 
 from __future__ import annotations
@@ -10,25 +10,26 @@ import os
 from pathlib import Path
 
 ROOT = Path(os.environ.get("QCALIBNET_ROOT", Path(__file__).resolve().parent.parent))
+PRIVATE_ROOT = Path(os.environ.get("QCALIBNET_PRIVATE_ROOT", ROOT.parent / "MIDLquantumpersional"))
+PRIVATE_ROOT = PRIVATE_ROOT if PRIVATE_ROOT.is_dir() else ROOT
 
-CHEXPERT_DIR = Path(os.environ.get("QCALIBNET_CHEXPERT_DIR", ROOT / "CheXpert"))
+CHEXPERT_DIR = Path(os.environ.get("QCALIBNET_CHEXPERT_DIR", PRIVATE_ROOT / "CheXpert"))
 CHEXPERT_TRAIN_CSV = CHEXPERT_DIR / "train.csv"
 CHEXPERT_VALID_CSV = CHEXPERT_DIR / "valid.csv"
 CHEXPERT_TRAIN_DIR = CHEXPERT_DIR / "train"
 CHEXPERT_VALID_DIR = CHEXPERT_DIR / "valid"
 
-VINDR_DIR = Path(os.environ.get("QCALIBNET_VINDR_DIR", ROOT / "VinBigData"))
+VINDR_DIR = Path(os.environ.get("QCALIBNET_VINDR_DIR", PRIVATE_ROOT / "VinBigData"))
 VINDR_TRAIN_DIR = VINDR_DIR / "train"
 VINDR_TEST_DIR = VINDR_DIR / "test"
 VINDR_META_CSV = VINDR_DIR / "train_meta.csv"
+DATA_DIR = Path(os.environ.get("QCALIBNET_DATA_DIR", PRIVATE_ROOT / "data"))
 VINDR_LABEL_CANDIDATES = (
     VINDR_DIR / "train.csv",
-    ROOT / "data" / "external" / "vindr_train.csv",
-    ROOT / "data" / "external" / "train.csv",
+    DATA_DIR / "external" / "vindr_train.csv",
 )
 
 CONFIG_DIR = ROOT / "configs"
-DATA_DIR = ROOT / "data"
 SPLITS_DIR = DATA_DIR / "splits"
 FEATURES_DIR = DATA_DIR / "features"
 RESULTS_DIR = ROOT / "results"
